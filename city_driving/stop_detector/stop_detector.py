@@ -5,10 +5,11 @@ import numpy as np
 from sensor_msgs.msg import Image
 from detector import StopSignDetector
 
+from std_msgs.msg import Bool
 class SignDetector:
     def __init__(self):
         self.detector = StopSignDetector()
-        self.publisher = None #TODO
+        self.publisher = rospy.Publisher("/stop_sign_detected", Bool, queue_size = 10)
         self.subscriber = rospy.Subscriber("/zed/zed_node/rgb/image_rect_color", Image, self.callback)
 
     def callback(self, img_msg):
@@ -17,7 +18,12 @@ class SignDetector:
         bgr_img = np_img[:,:,:-1]
         rgb_img = cv2.cvtColor(bgr_img, cv2.COLOR_BGR2RGB)
 
-        #TODO: 
+    
+        stop_sign_detected = self.detector.predict(rgb_img)
+        if stop_sign_detected:
+            self.publisher.publish(True)
+        
+
 
 if __name__=="__main__":
     rospy.init_node("stop_sign_detector")
