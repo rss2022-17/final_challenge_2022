@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
+from distutils.log import debug
 import numpy as np
 import rospy
+from utils import LineTrajectory
 
 # Computer Vision packages
 import cv2
@@ -26,14 +28,13 @@ class OrangeLineDetector():
     """
 
     def __init__(self):
-        
-        self.traj_topic = rospy.get_param("~traj_topic", "/current_trajectory")
+        self.trajectory = LineTrajectory("/planned_trajectory")
+        self.traj_topic = rospy.get_param("~traj_topic", "/trajectory/current")
         self.traj_pub = rospy.Publisher(self.traj_topic, PoseArray, queue_size=10)
 
         self.homography = HomographyTransformer()
-        print("We might want to overwrite homography transformer to be static")
 
-        self.debug_pub = rospy.Publisher("/cone_debug_img", Image, queue_size=10)
+        self.debug_pub = rospy.Publisher("/traj_debug_img", Image, queue_size=10)
         self.image_sub = rospy.Subscriber("/zed/zed_node/rgb/image_rect_color", Image, self.image_callback)
         self.bridge = CvBridge() # Converts between ROS images and OpenCV Images
 
@@ -51,6 +52,7 @@ class OrangeLineDetector():
         # vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
         #################################
 
+        self.trajectory.clear()
         image = self.bridge.imgmsg_to_cv2(image_msg, "bgr8")
 
         lower_bound = (5, 190, 100)
@@ -58,29 +60,22 @@ class OrangeLineDetector():
         template = [lower_bound, upper_bound]
 
         trajectory_pixels = lf_color_segmentation(image, template, pct=0.5, visualize=False)
-        trajectory_points = []
-        for point_pixels in trajectory_pixels:
-            (x, y) = self.homography.transformUvToXy(*point_pixels)
 
-            new_point = Point32(x, y, 0)
-            #TODO fix this
-            self.trajectory.addPoint(new_point)
+        debug_img = image.copy()
+        
+        if trajectory_pixels is not None:
+            for point_pixels in trajectory_pixels:
+                (x, y) = self.homography.transformUvToXy(*point_pixels)
 
+                debug_img = cv2.point(debug_img, point_pixels, 5, (255, 255, 0), 1)
 
+                new_point = Point32(x, y, 0)
+                self.trajectory.addPoint(new_point)
 
+        self.traj_pub.publish(self.trajectory.toPoseArray())
+        self.trajectory.publish_viz()
 
-        if self.LineFollower:
-            bb = lf_color_segmentation(image, template)
-        else:
-            bb = cd_color_segmentation(image, template)
-	    #cone_base = ((bb[0,0]+bb[1,0])/2, bb[1][1])
-        cone_msg = ConeLocationPixel()
-        cone_msg.u=(bb[0][0]+bb[1][0])/2
-        cone_msg.v = bb[1][1]
-        debug_img = cv2.rectangle(image, bb[0], bb[1], (0, 255, 0), 2) #adds box onto image
-        debug_msg = self.bridge.cv2_to_imgmsg(debug_img, "bgr8")
-        self.debug_pub.publish(debug_msg)
-        self.cone_pub.publish(cone_msg)
+        if (self.debug_pub.get_num_connections() > 0): self.debug_pub(self.bridge.cv2_to_imgmsg(debug_img, "bgr8"))
 
 
 
