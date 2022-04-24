@@ -180,7 +180,7 @@ def self_intersections(lines):
 
 
 
-def lf_color_segmentation(img, template=None, pct=0.25): #pct specifies which portion of the image to look in
+def lf_color_segmentation(img, template=None, pct=0.5, visualize=False): #pct specifies which portion of the image to look in
 	"""
 	Implement the cone detection using color segmentation algorithm
 	Input:
@@ -193,11 +193,8 @@ def lf_color_segmentation(img, template=None, pct=0.25): #pct specifies which po
 	"""
 	########## YOUR CODE STARTS HERE ##########
 	horizontal_line_step = 60
-	pixel_cutoff = 0.5
+	pixel_cutoff = pct
 
-
-	image_print(img)
-	x = y = w = h = 0
 	# image_print(img) #prints image
 	# bounding values: change for different lighting conditions in HSV
 	if template is not None:
@@ -213,7 +210,7 @@ def lf_color_segmentation(img, template=None, pct=0.25): #pct specifies which po
 	hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) #converts bgr to hsv
 	img_shape = hsv_img.shape
 
-	start_x = int(np.floor(img_shape[0]*(1-pct)))
+	start_x = int(np.floor(img_shape[0]*(1-1)))
 	hsv_img_cropped = hsv_img[start_x:,:]
 	mask = cv2.inRange(hsv_img_cropped, lower_bounds, upper_bounds) #creates binary image with 1 = within bounds given
 	element = np.ones((5, 5), np.uint8) #kernel for erosion/dilation
@@ -241,23 +238,22 @@ def lf_color_segmentation(img, template=None, pct=0.25): #pct specifies which po
 		segmented = sorted(segmented, key=lambda g: (g[0][0][1]-np.pi/2)**2, reverse=True) 
 
 		# add the different groups by color to the base image
-		group_colors = [(0, 0, 255), (255, 0, 0), (25, 25, 25)]
-		for g_idx, group in enumerate(segmented):
-			print("Group "+str(g_idx)+" has angle: "+str(group[0][0][1]))
-			for l_idx, l in enumerate(group):
-				rho = l[0][0]
-				theta = l[0][1]
-				a = np.cos(theta)
-				b = np.sin(theta)
-				x0 = a * rho
-				y0 = b * rho
-				pt1 = (int(x0 + 1000*(-b)), int(y0 + 1000*(a)))
-				pt2 = (int(x0 - 1000*(-b)), int(y0 - 1000*(a)))
-				
-				# cv2.line(img, pt1, pt2, group_colors[g_idx], 2, cv2.LINE_AA)
-
-
-		# image_print(img, "lines")
+		if visualize:
+			group_colors = [(0, 0, 255), (255, 0, 0), (25, 25, 25)]
+			for g_idx, group in enumerate(segmented):
+				# print("Group "+str(g_idx)+" has angle: "+str(group[0][0][1]))
+				for l_idx, l in enumerate(group):
+					rho = l[0][0]
+					theta = l[0][1]
+					a = np.cos(theta)
+					b = np.sin(theta)
+					x0 = a * rho
+					y0 = b * rho
+					pt1 = (int(x0 + 1000*(-b)), int(y0 + 1000*(a)))
+					pt2 = (int(x0 - 1000*(-b)), int(y0 - 1000*(a)))
+					
+					# UNCOMMENT THE LINE BELOW TO SEE THE LINES!
+					# cv2.line(img, pt1, pt2, group_colors[g_idx], 2, cv2.LINE_AA)
 
 		# first two line groupings are theoretically the lines we care about
 		# the third line group should be the horizontal group
@@ -272,16 +268,16 @@ def lf_color_segmentation(img, template=None, pct=0.25): #pct specifies which po
 		# find the points intersecting with the lower classification and the horizontal lines
 		filter_lower = lower_intersections[:,:,1] > average_point[0][1]
 		lower_intersections_to_use = lower_intersections[filter_lower, :]
-		# draw them
+		# draw them (but not anymore)
 		# for idx, pt in enumerate(lower_intersections_to_use): cv2.circle(img, tuple(pt), 5, (0, 255, 255), 1)
 
 		# finds the points intersecting with the upper classification and the horizontal lines
 		filter_upper = upper_intersections[:,:,1] < average_point[0][1]
 		upper_intersections_to_use = upper_intersections[filter_upper, :]
-		# draw them
+		# draw them (but not anymore)
 		# for idx, pt in enumerate(upper_intersections_to_use): cv2.circle(img, tuple(pt), 5, (255, 0, 255), 1)
 
-		
+		# create a trajectory using the average intersection point moving upwards
 		yboundary = average_point[0][1]
 		points_in_trajectory = [tuple(average_point[0].tolist())]
 		for intercept in range(0, int(img_shape[0]*pixel_cutoff), horizontal_line_step):
@@ -302,44 +298,22 @@ def lf_color_segmentation(img, template=None, pct=0.25): #pct specifies which po
 				new_filter = upper_intersections_to_use[:,1] == yval
 				new_point = np.average(upper_intersections_to_use[new_filter,:], axis=0).astype(np.int32)
 			
-			
 			points_in_trajectory.append(tuple(new_point.tolist()))
 
+		# sort the points from nearest to the bottom to the farthest
+		points_in_trajectory = sorted(points_in_trajectory, key=lambda p: p[1], reverse=True)
 
-		# find where the lines in different groups intersect eachother
-		intersections = segmented_intersections(segmented)
-		# sort the intersections by their y value, reversed so the first point is at the bottom of the image
-		intersections = sorted(intersections, key=lambda p: p[0][1], reverse=True)
-
-		
-		for idx, pt in enumerate(points_in_trajectory): cv2.circle(img, tuple(pt), 5, (255, 255, 0), 1)
-
-
-	else:
-		print("There are no lines :(")
-
-	image_print(img, "image with lines")
+		if visualize:
+			# paint the trajectory on the image using a dark-to-teal gradient
+			for idx, pt in enumerate(points_in_trajectory): cv2.circle(img, tuple(pt), 5, (255*idx/len(points_in_trajectory), 255*idx/len(points_in_trajectory), 0), 1)
+			
+			image_print(img, "image with trajectory")
+		# Now that we have a trajectory, we should return the points
+		return points_in_trajectory
 
 
-	hsv, contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) #finding areas were masks exist
-	cnt = None
-	max_area = -1
-	# finding largest contour in mask
-	for i in contours:
-		area = i.shape[0]
-		if area > max_area:
-			cnt = i
-			max_area = area
-	if cnt is not None:
-		x, y, w, h = cv2.boundingRect(cnt) # creates rectangle around largest contour
-		# cv2.rectangle(img, (x, y), (x+w,y+h), (255, 0, 0), 2) #adds box onto image
-	#image_print(img)
-	#bounding_box = ((x,y+start_y),(x+w,y+h+start_y))
-	bounding_box = ((x,y+start_x), (x+w, y+h+start_x))
-	########### YOUR CODE ENDS HERE ###########
-
-	# Return bounding box
-	return bounding_box
+	# we couldn't find any lines :(
+	return None
 
 # if __name__ == '__main__':
 # 	imgg = cv2.imread("./test_images_more_cones/IMG_7709.jpg")
@@ -352,4 +326,4 @@ def lf_color_segmentation(img, template=None, pct=0.25): #pct specifies which po
 
 if __name__ == '__main__':
 	_img = cv2.imread("./test_images_track/city-driving-line-following-3.png")
-	lf_color_segmentation(_img, pct=1)
+	lf_color_segmentation(_img, visualize=True)
