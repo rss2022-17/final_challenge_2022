@@ -192,6 +192,10 @@ def lf_color_segmentation(img, template=None, pct=0.25): #pct specifies which po
 				(x1, y1) is the top left of the bbox and (x2, y2) is the bottom right of the bbox
 	"""
 	########## YOUR CODE STARTS HERE ##########
+	horizontal_line_step = 60
+	pixel_cutoff = 0.5
+
+
 	image_print(img)
 	x = y = w = h = 0
 	# image_print(img) #prints image
@@ -224,7 +228,7 @@ def lf_color_segmentation(img, template=None, pct=0.25): #pct specifies which po
 	lines = cv2.HoughLines(canny_img, 1, np.pi/180, 50, None, 0, 0)
 
 	# Add horizontal lines to the image [r = y-int, theta = pi/2]
-	for intercept in range(0, int(img_shape[0]/2), 60):
+	for intercept in range(0, int(img_shape[0] * pixel_cutoff), horizontal_line_step):
 		# y = 0 is at the top
 		lines = np.vstack((lines, np.array([[img_shape[0] - intercept, np.pi/2]])[np.newaxis, :, :]))
 
@@ -233,12 +237,13 @@ def lf_color_segmentation(img, template=None, pct=0.25): #pct specifies which po
 		# Create three groups of lines
 		segmented = segment_angle_kmeans(lines, k=3)
 
-		# sort by theta, don't reverse so we consider high angles first
-		segmented = sorted(segmented, key=lambda g: g[0][0][1], reverse=False) 
+		# sorted by theta's distance from pi/2, reversed so we look at more vertical lines first
+		segmented = sorted(segmented, key=lambda g: (g[0][0][1]-np.pi/2)**2, reverse=True) 
 
 		# add the different groups by color to the base image
-		group_colors = [(0, 255, 0), (255, 0, 0), (25, 25, 25)]
+		group_colors = [(0, 0, 255), (255, 0, 0), (25, 25, 25)]
 		for g_idx, group in enumerate(segmented):
+			print("Group "+str(g_idx)+" has angle: "+str(group[0][0][1]))
 			for l_idx, l in enumerate(group):
 				rho = l[0][0]
 				theta = l[0][1]
@@ -249,14 +254,65 @@ def lf_color_segmentation(img, template=None, pct=0.25): #pct specifies which po
 				pt1 = (int(x0 + 1000*(-b)), int(y0 + 1000*(a)))
 				pt2 = (int(x0 - 1000*(-b)), int(y0 - 1000*(a)))
 				
-				cv2.line(img, pt1, pt2, group_colors[g_idx], 2, cv2.LINE_AA)
+				# cv2.line(img, pt1, pt2, group_colors[g_idx], 2, cv2.LINE_AA)
 
 
-		image_print(img, "lines")
+		# image_print(img, "lines")
+
+		# first two line groupings are theoretically the lines we care about
+		# the third line group should be the horizontal group
+		main_intersections = np.array(segmented_intersections(segmented[:2]))
+		lower_intersections = np.array(segmented_intersections([segmented[0], segmented[2]]))
+		upper_intersections = np.array(segmented_intersections(segmented[1:]))
+
+		# average point of the two main classes intersecting
+		average_point = np.rint(np.average(main_intersections, axis=0)).astype(np.int32)
+		# cv2.circle(img, tuple(average_point[0].tolist()), 5, (255, 255, 0), 1)
+
+		# find the points intersecting with the lower classification and the horizontal lines
+		filter_lower = lower_intersections[:,:,1] > average_point[0][1]
+		lower_intersections_to_use = lower_intersections[filter_lower, :]
+		# draw them
+		# for idx, pt in enumerate(lower_intersections_to_use): cv2.circle(img, tuple(pt), 5, (0, 255, 255), 1)
+
+		# finds the points intersecting with the upper classification and the horizontal lines
+		filter_upper = upper_intersections[:,:,1] < average_point[0][1]
+		upper_intersections_to_use = upper_intersections[filter_upper, :]
+		# draw them
+		# for idx, pt in enumerate(upper_intersections_to_use): cv2.circle(img, tuple(pt), 5, (255, 0, 255), 1)
+
+		
+		yboundary = average_point[0][1]
+		points_in_trajectory = [tuple(average_point[0].tolist())]
+		for intercept in range(0, int(img_shape[0]*pixel_cutoff), horizontal_line_step):
+			# y = 0 is at the top
+			# lines = np.vstack((lines, np.array([[img_shape[0] - intercept, np.pi/2]])[np.newaxis, :, :]))
+			yval = img_shape[0] - intercept
+			
+			# are we considering the lower class?
+			if yval > yboundary:
+				# yes! look at that
+				new_filter = lower_intersections_to_use[:,1] == yval
+				new_point = np.average(lower_intersections_to_use[new_filter,:],axis=0).astype(np.int32)
+
+
+				pass
+			else:
+				# no! look at  the upper class
+				new_filter = upper_intersections_to_use[:,1] == yval
+				new_point = np.average(upper_intersections_to_use[new_filter,:], axis=0).astype(np.int32)
+			
+			
+			points_in_trajectory.append(tuple(new_point.tolist()))
+
 
 		# find where the lines in different groups intersect eachother
 		intersections = segmented_intersections(segmented)
-		for pt in intersections: cv2.circle(img, tuple(pt[0]), 5, (255, 0, 255), 1)
+		# sort the intersections by their y value, reversed so the first point is at the bottom of the image
+		intersections = sorted(intersections, key=lambda p: p[0][1], reverse=True)
+
+		
+		for idx, pt in enumerate(points_in_trajectory): cv2.circle(img, tuple(pt), 5, (255, 255, 0), 1)
 
 
 	else:
@@ -295,5 +351,5 @@ def lf_color_segmentation(img, template=None, pct=0.25): #pct specifies which po
 
 
 if __name__ == '__main__':
-	_img = cv2.imread("./test_images_track/city-driving-line-following.png")
+	_img = cv2.imread("./test_images_track/city-driving-line-following-3.png")
 	lf_color_segmentation(_img, pct=1)
