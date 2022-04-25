@@ -31,6 +31,8 @@ class LineTrajectory(object):
             self.traj_pub  = rospy.Publisher(viz_namespace + "/path", Marker, queue_size = 1)
             self.end_pub   = rospy.Publisher(viz_namespace + "/end_pose", Marker, queue_size = 1)
 
+        self.wheelbase = 0.32 #used for curvature calculations    
+
     # compute the distances along the path for all path segments beyond those already computed
     def update_distances(self):
         num_distances = len(self.distances)
@@ -44,6 +46,34 @@ class LineTrajectory(object):
                 p1 = self.points[i]
                 delta = np.array([p0[0]-p1[0],p0[1]-p1[1]])
                 self.distances.append(self.distances[i-1] + np.linalg.norm(delta))
+
+    def get_starting_curvature(self, lookahead=2): #look up to 2 meters ahead
+        if self.distances[-1] < lookahead:
+            end_ind = len(self.distances)
+        else:
+            end_ind = self.find_distance(lookahead, 0, len(self.distances))
+        deltas = np.zeros(end_ind+1) #angles at which the pp controller would set to hit the next vertex
+        for i in range(end_ind):
+            if i==0:
+                continue #turning angle not well defined for last point
+            if i==end_ind-1:
+                continue
+            l01 = np.array((self.points[i][0]-self.points[i-1][0], self.points[i][1]-self.points[i-1][1]))
+            l12 = np.array((self.points[i+1][0]-self.points[i][0], self.points[i+1][1]-self.points[i][1]))
+            L1 = np.linalg.norm(l12) #distance from point i to point i + 1
+            angle = np.arccos(np.dot(l01, l12)/(np.linalg.norm(l01)*np.linalg.norm(l12)))
+            delta = np.arctan2(2*self.wheelbase*np.sin(angle), L1)
+            deltas[i] = delta
+        return np.max(deltas) #could also return average or something like that    
+
+    def find_distance (self, target, start, end):
+        if end-start ==1:
+            return end #base case. Kind of assume we are never == which seems likely in this case
+        new = start + (end-start)/2 #intentionally want integer division here (for once)
+        if self.distances[new] > target:
+            return self.find_distance(target, start, new)
+        else:
+            return self.find_distance(target, new, end)
 
     def distance_to_end(self, t):
         if not len(self.points) == len(self.distances):

@@ -17,7 +17,7 @@ class PurePursuit(object):
     """
     def __init__(self):
         self.odom_topic       = rospy.get_param("~odom_topic")
-        #self.lookahead        = 1.5
+        self.lookahead        = 1 #starting val, will get overwritten by trajectory callback
         self.speed            = 4
         #self.wrap             = # FILL IN #
         self.wheelbase_length = 0.32#
@@ -36,10 +36,15 @@ class PurePursuit(object):
     def trajectory_callback(self, msg):
         ''' Clears the currently followed trajectory, and loads the new one from the message
         '''
-        print("Receiving new trajectory:", len(msg.poses), "points")
+        rospy.loginfo("Receiving new trajectory: " + str( len(msg.poses)) + " points")
         self.trajectory.clear()
         self.trajectory.fromPoseArray(msg)
         self.trajectory.publish_viz(duration=0.0)
+        max_curve = self.trajectory.get_starting_curvature()
+        self.lookahead = np.max((np.min((4, 1/(max_curve+1e-3))), 0.5))
+        self.speed = self.lookahead
+        rospy.loginfo("1/max curve:{}".format(1/(max_curve+1e-5)))
+        rospy.loginfo("Lookahead:{}".format(self.lookahead))
 
     def odom_callback(self, msg):
         car_x = msg.pose.pose.position.x #step 1, determine current location of vehicle
@@ -91,7 +96,8 @@ class PurePursuit(object):
         #step 3, find goal point
         intersecting_points = []
         Q = [car_x, car_y]
-        r = self.speed*0.5 #dynamic lookahead rule
+        #r = self.speed*0.5 #dynamic lookahead rule
+        r = self.lookahead
         for i in range(min_ind, len(points)-1): #-1 because we're looking at segments between points
             P1 = points[i]
             V = points[i+1]-P1
