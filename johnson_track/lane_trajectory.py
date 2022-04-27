@@ -31,11 +31,12 @@ class LaneTrajectory():
         self.trajectory = LineTrajectory("/planned_trajectory")
         self.traj_topic = rospy.get_param("~traj_topic", "/trajectory/current")
         self.traj_pub = rospy.Publisher(self.traj_topic, PoseArray, queue_size=10)
+        self.image_topic = rospy.get_param("~image_topic", "/zed/zed_node/rgb/image_rect_color")
 
         self.homography = HomographyTransformer()
 
         self.debug_pub = rospy.Publisher("/traj_debug_img", Image, queue_size=10)
-        self.image_sub = rospy.Subscriber("/zed/zed_node/rgb/image_rect_color", Image, self.image_callback)
+        self.image_sub = rospy.Subscriber(self.image_topic, Image, self.image_callback)
         self.bridge = CvBridge() # Converts between ROS images and OpenCV Images
 
     def image_callback(self, image_msg):
@@ -54,7 +55,8 @@ class LaneTrajectory():
 
         self.trajectory.clear()
         image = self.bridge.imgmsg_to_cv2(image_msg, "bgr8")
-        image_y, image_x = image.shape()
+        print(image.shape[:2])
+        image_y, image_x = image.shape[:2]
 
         trajectory_sides = track_trajectory(image)
 
@@ -73,7 +75,9 @@ class LaneTrajectory():
                 x_avg = (left_x_hom+right_x_hom)/2.0
                 y_avg = (left_y_hom+right_y_hom)/2.0
 
-                # debug_img = cv2.point(debug_img, point_pixels, 5, (255, 255, 0), 1)
+                x_avg_img = np.rint((left_x+right_x)/2.0).astype(np.uint16)
+                y_avg_img = np.rint((left_y+right_y)/2.0).astype(np.uint16)
+                debug_img = cv2.circle(debug_img, (x_avg_img, y_avg_img), 5, (255, 255, 0), 1)
 
                 new_point = Point32(x_avg, y_avg, 0)
                 self.trajectory.addPoint(new_point)
@@ -81,7 +85,7 @@ class LaneTrajectory():
         self.traj_pub.publish(self.trajectory.toPoseArray())
         self.trajectory.publish_viz()
 
-        if (self.debug_pub.get_num_connections() > 0): self.debug_pub(self.bridge.cv2_to_imgmsg(debug_img, "bgr8"))
+        if (self.debug_pub.get_num_connections() > 0): self.debug_pub.publish(self.bridge.cv2_to_imgmsg(debug_img, "bgr8"))
 
 
 
