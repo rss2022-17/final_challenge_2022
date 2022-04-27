@@ -46,10 +46,9 @@ class PurePursuit(object):
         rospy.loginfo("1/max curve:{}".format(1/(max_curve+1e-5)))
         rospy.loginfo("Lookahead:{}".format(self.lookahead))
 
-    def odom_callback(self, msg):
-        car_x = msg.pose.pose.position.x #step 1, determine current location of vehicle
-        car_y = msg.pose.pose.position.y
-        car_point = np.array([car_x,car_y])
+#    def odom_callback(self, msg):
+#step 1, determine current location of vehicle
+        car_point = np.array([0,0])
         points = np.array(self.trajectory.points)
 
         # rospy.loginfo(len(points))
@@ -86,7 +85,7 @@ class PurePursuit(object):
         if distances[min_ind] > self.shutdown_threshold:
             drive_cmd = AckermannDriveStamped()
             drive_cmd.header.stamp = rospy.Time.now()
-            drive_cmd.header.frame_id = "/base_link_pf"
+            drive_cmd.header.frame_id = "/base_link"
             drive_cmd.drive.steering_angle = 0
             drive_cmd.drive.speed = 0
             self.drive_pub.publish(drive_cmd)
@@ -120,7 +119,7 @@ class PurePursuit(object):
         if not intersecting_points:
             drive_cmd = AckermannDriveStamped()
             drive_cmd.header.stamp = rospy.Time.now()
-            drive_cmd.header.frame_id = "/base_link_pf"
+            drive_cmd.header.frame_id = "/base_link"
             drive_cmd.drive.steering_angle = 0
             drive_cmd.drive.speed = 0
             self.drive_pub.publish(drive_cmd)
@@ -130,7 +129,7 @@ class PurePursuit(object):
 
         goal_msg = PointStamped()
         goal_msg.header.stamp = rospy.Time.now()
-        goal_msg.header.frame_id = "map"
+        goal_msg.header.frame_id = "base_link"
 
         goal_msg.point = Point()
         goal_msg.point.x=goal[0]
@@ -139,12 +138,15 @@ class PurePursuit(object):
         self.lookahead_pub.publish(goal_msg)
         
         #step 4, Transform the goal point to vehicle coordinates
+        """
         rot_mat = tf.transformations.quaternion_matrix((msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w))
         trans_mat = tf.transformations.translation_matrix((msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z))
         combined_mat = np.linalg.inv(np.matmul(trans_mat, rot_mat))
         translated_goal = np.transpose(np.array([goal[0], goal[1], 0, 1]))
         translated_goal = np.matmul(combined_mat, translated_goal)
 #        translated_goal = np.array([translated_goal[0], translated_goal[1]])
+        """
+        translated_goal = goal
 
         #step 5, calculate the curvature
         angle = np.arctan2(translated_goal[1], translated_goal[0])
@@ -153,7 +155,7 @@ class PurePursuit(object):
 
         drive_cmd = AckermannDriveStamped()
         drive_cmd.header.stamp = rospy.Time.now()
-        drive_cmd.header.frame_id = "/base_link_pf"
+        drive_cmd.header.frame_id = "/base_link"
         drive_cmd.drive.steering_angle = delta
         drive_cmd.drive.speed = self.speed
         self.drive_pub.publish(drive_cmd)
