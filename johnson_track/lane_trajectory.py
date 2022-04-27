@@ -67,10 +67,10 @@ class LaneTrajectory():
             trajectory_right = trajectory_sides[1]
             for i in range(len(trajectory_left)):
                 left_x, left_y = trajectory_left[i]
-                right_x, right_y = trajectory_left[i]
+                right_x, right_y = trajectory_right[i]
 
                 left_x_hom, left_y_hom = self.homography.transformUvToXy(left_x,left_y)
-                right_x_hom, right_y_hom = self.homography.transformUvToXy(left_x,left_y)
+                right_x_hom, right_y_hom = self.homography.transformUvToXy(right_x,right_y)
 
                 x_avg = (left_x_hom+right_x_hom)/2.0
                 y_avg = (left_y_hom+right_y_hom)/2.0
