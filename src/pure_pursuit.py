@@ -17,6 +17,7 @@ class PurePursuit(object):
     """
     def __init__(self):
         self.odom_topic       = rospy.get_param("~odom_topic")
+        self.drive_topic      = rospy.get_param("~drive_topic", "/drive")
         self.lookahead        = 1 #starting val, will get overwritten by trajectory callback
         self.speed            = 4
         #self.wrap             = # FILL IN #
@@ -24,12 +25,12 @@ class PurePursuit(object):
         self.shutdown_threshold = 5 #if off by then stop
         self.trajectory  = utils.LineTrajectory("/followed_trajectory")
         self.traj_sub = rospy.Subscriber("/trajectory/current", PoseArray, self.trajectory_callback, queue_size=1)
-        self.drive_pub = rospy.Publisher("/drive", AckermannDriveStamped, queue_size=1)
+        self.drive_pub = rospy.Publisher(self.drive_topic, AckermannDriveStamped, queue_size=1)
         self.lookahead_pub = rospy.Publisher("/lookahead_point", PointStamped, queue_size=1)
         self.error_pub = rospy.Publisher("/pp/error", Float64, queue_size=1)
         #self.sqr_error_integral_pub = rospy.Publisher("/pp/sqr_error_integral", Float64, queue_size=1)
         #self.integral_error=0
-        self.odom_sub = rospy.Subscriber(self.odom_topic, Odometry, self.odom_callback, queue_size=1)
+        #self.odom_sub = rospy.Subscriber(self.odom_topic, Odometry, self.odom_callback, queue_size=1)
 
 
 
@@ -94,7 +95,7 @@ class PurePursuit(object):
 
         #step 3, find goal point
         intersecting_points = []
-        Q = [car_x, car_y]
+        Q = [0,0] #[car_x, car_y]
         #r = self.speed*0.5 #dynamic lookahead rule
         r = self.lookahead
         for i in range(min_ind, len(points)-1): #-1 because we're looking at segments between points

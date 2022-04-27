@@ -58,7 +58,9 @@ class LaneTrajectory():
         print(image.shape[:2])
         image_y, image_x = image.shape[:2]
 
+        print("in image callback!")
         trajectory_sides = track_trajectory(image)
+        print("in image callback2!")
 
         debug_img = image.copy()
         
@@ -82,8 +84,10 @@ class LaneTrajectory():
                 new_point = Point32(x_avg, y_avg, 0)
                 self.trajectory.addPoint(new_point)
 
+
         self.traj_pub.publish(self.trajectory.toPoseArray())
         self.trajectory.publish_viz()
+        print("in image callback2!")
 
         if (self.debug_pub.get_num_connections() > 0): self.debug_pub.publish(self.bridge.cv2_to_imgmsg(debug_img, "bgr8"))
 
