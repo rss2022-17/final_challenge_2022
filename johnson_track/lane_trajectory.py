@@ -10,7 +10,7 @@ import cv2
 from cv_bridge import CvBridge, CvBridgeError
 
 # ROS Messages
-from sensor_msgs.msgs import Image
+from sensor_msgs.msg import Image
 from geometry_msgs.msg import Point32, PoseArray
 from visual_servoing.msg import ConeLocationPixel # custom message
 from homography_transformer import HomographyTransformer
