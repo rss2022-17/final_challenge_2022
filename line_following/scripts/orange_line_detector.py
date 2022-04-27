@@ -10,7 +10,7 @@ import cv2
 from cv_bridge import CvBridge, CvBridgeError
 
 # ROS Messages
-from sensor_msgs.msgs import Image
+from sensor_msgs.msg import Image
 from geometry_msgs.msg import Point32, PoseArray
 from visual_servoing.msg import ConeLocationPixel # custom message
 from homography_transformer import HomographyTransformer
@@ -31,11 +31,12 @@ class OrangeLineDetector():
         self.trajectory = LineTrajectory("/planned_trajectory")
         self.traj_topic = rospy.get_param("~traj_topic", "/trajectory/current")
         self.traj_pub = rospy.Publisher(self.traj_topic, PoseArray, queue_size=10)
+        self.image_topic = rospy.get_param("~image_topic", "zed/zed_node/rgb/image_rect_color")
 
         self.homography = HomographyTransformer()
 
         self.debug_pub = rospy.Publisher("/traj_debug_img", Image, queue_size=10)
-        self.image_sub = rospy.Subscriber("/zed/zed_node/rgb/image_rect_color", Image, self.image_callback)
+        self.image_sub = rospy.Subscriber(self.image_topic, Image, self.image_callback)
         self.bridge = CvBridge() # Converts between ROS images and OpenCV Images
 
     def image_callback(self, image_msg):
@@ -67,7 +68,7 @@ class OrangeLineDetector():
             for point_pixels in trajectory_pixels:
                 (x, y) = self.homography.transformUvToXy(*point_pixels)
 
-                debug_img = cv2.point(debug_img, point_pixels, 5, (255, 255, 0), 1)
+                debug_img = cv2.circle(debug_img, point_pixels, 5, (255, 255, 0), 1)
 
                 new_point = Point32(x, y, 0)
                 self.trajectory.addPoint(new_point)
@@ -75,7 +76,7 @@ class OrangeLineDetector():
         self.traj_pub.publish(self.trajectory.toPoseArray())
         self.trajectory.publish_viz()
 
-        if (self.debug_pub.get_num_connections() > 0): self.debug_pub(self.bridge.cv2_to_imgmsg(debug_img, "bgr8"))
+        if (self.debug_pub.get_num_connections() > 0): self.debug_pub.publish(self.bridge.cv2_to_imgmsg(debug_img, "bgr8"))
 
 
 

@@ -8,6 +8,7 @@ from visual_servoing.msg import ConeLocation, ParkingError
 from ackermann_msgs.msg import AckermannDriveStamped
 from visualization_msgs.msg import Marker
 
+#Copied from visual servoing lab, meant for following line in city
 class ParkingController():
     """
     A controller for parking in front of a cone.
