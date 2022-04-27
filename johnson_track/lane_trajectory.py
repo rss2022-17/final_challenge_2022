@@ -75,9 +75,8 @@ class LaneTrajectory():
 
                 # debug_img = cv2.point(debug_img, point_pixels, 5, (255, 255, 0), 1)
 
-                if 0 <= x_avg < image_x and 0 <= y_avg < image_y:
-                    new_point = Point32(x_avg, y_avg, 0)
-                    self.trajectory.addPoint(new_point)
+                new_point = Point32(x_avg, y_avg, 0)
+                self.trajectory.addPoint(new_point)
 
         self.traj_pub.publish(self.trajectory.toPoseArray())
         self.trajectory.publish_viz()
