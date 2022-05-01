@@ -10,6 +10,7 @@ import cv2
 from cv_bridge import CvBridge, CvBridgeError
 
 # ROS Messages
+from std_msgs.msg import Bool
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import Point32, PoseArray
 from visual_servoing.msg import ConeLocationPixel # custom message
@@ -32,9 +33,13 @@ class OrangeLineDetector():
         self.traj_topic = rospy.get_param("~traj_topic", "/trajectory/current")
         self.traj_pub = rospy.Publisher(self.traj_topic, PoseArray, queue_size=10)
         self.image_topic = rospy.get_param("~image_topic", "zed/zed_node/rgb/image_rect_color")
+        self.line_follower_state_topic = rospy.get_param("~active_state", "/line_follower")
+
+        self.active_state = rospy.get_param("~start_active", False)
 
         self.homography = HomographyTransformer()
 
+        self.state_sub = rospy.Subscriber(self.line_follower_state_topic, Bool, self.state_callback)
         self.debug_pub = rospy.Publisher("/traj_debug_img", Image, queue_size=10)
         self.image_sub = rospy.Subscriber(self.image_topic, Image, self.image_callback)
         self.bridge = CvBridge() # Converts between ROS images and OpenCV Images
@@ -52,6 +57,9 @@ class OrangeLineDetector():
         # pixel location in the image.
         # vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
         #################################
+
+        # If the state machine hasn't activated, skip over the callback
+        if not self.active_state: return
 
         self.trajectory.clear()
         image = self.bridge.imgmsg_to_cv2(image_msg, "bgr8")
@@ -77,6 +85,9 @@ class OrangeLineDetector():
         self.trajectory.publish_viz()
 
         if (self.debug_pub.get_num_connections() > 0): self.debug_pub.publish(self.bridge.cv2_to_imgmsg(debug_img, "bgr8"))
+
+    def state_callback(self, msg):
+        self.active_state = msg.data
 
 
 

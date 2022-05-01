@@ -1,5 +1,7 @@
 <launch>
     <include file = "$(find localization)/launch/racecar_model.launch"/>
+
+
     <include file = "$(find zed_wrapper)/launch/zed.launch"/>
 
     <node pkg="final_challenge" type="pure_pursuit.py" name="Trajectory_follower">
@@ -7,27 +9,10 @@
 		<param name="drive_topic" value="/vesc/high_level/ackermann_cmd_mux/input/nav_2"/>
 	</node>
 
-	<node pkg="final_challenge" type="city_driving_state_machine.py" name="state_machine">
-		<param name="stop_detected" value="/stop_detected"/>
-		<param name="car_wash_detected" value="/car_wash_detected"/>
-
-		<!-- TOPICS THAT INDICATE STATE -->
-		<param name="line_follower", "/line_follower"/>
-		<param name="stop_state", "/stop_state"/>
-		<param name="car_wash_state", "/car_wash_state"/>
-	</node>
-
-	<node pkg="final_challenge" type="stop_detector.py" name="stop_detector" output="screen">
-		<param name="stop_detected" value="/stop_detected"/>
-	</node>
-
-
 	<node pkg="final_challenge" type="orange_line_detector.py" name="Trajectory_planner" output="screen">
 		<param name="image_topic" value="/zed/zed_node/rgb/image_rect_color"/>
 		<param name="active_state", "/line_follower"/>
-
-		<!-- DEFAULTS TO BOOLEAN FALSE IN SCRIPT, I JUST HAVE THIS HERE AS A REMINDER THAT IT EXISTS -->
-		<!-- <param name="start_active", "False"/> --> 
+		<param name="start_active", "True"/> 
 	</node>
 
 	<node pkg="wall_follower" type="safety_controller.py" name="safety_controller">

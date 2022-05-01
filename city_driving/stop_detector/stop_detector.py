@@ -9,7 +9,8 @@ from std_msgs.msg import Bool
 class SignDetector:
     def __init__(self):
         self.detector = StopSignDetector()
-        self.publisher = rospy.Publisher("/stop_sign_detected", Bool, queue_size = 10)
+        self.stop_detected_topic = rospy.get_param("~stop_detected", "/stop_detected")
+        self.publisher = rospy.Publisher(self.stop_detected_topic, Bool, queue_size = 10)
         self.subscriber = rospy.Subscriber("/zed/zed_node/rgb/image_rect_color", Image, self.callback)
 
     def callback(self, img_msg):
@@ -21,7 +22,7 @@ class SignDetector:
     
         stop_sign_detected = self.detector.predict(rgb_img)
         if stop_sign_detected:
-            self.publisher.publish(True)
+            self.publisher.publish(Bool(True))
         
 
 
