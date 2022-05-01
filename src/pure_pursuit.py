@@ -19,7 +19,7 @@ class PurePursuit(object):
         self.odom_topic       = rospy.get_param("~odom_topic")
         self.drive_topic      = rospy.get_param("~drive_topic", "/drive")
         self.lookahead        = 1 #starting val, will get overwritten by trajectory callback
-        self.speed            = 4
+        self.speed            = float(rospy.get_param("~speed", 4))
         #self.wrap             = # FILL IN #
         self.wheelbase_length = 0.32#
         self.shutdown_threshold = 5 #if off by then stop
