@@ -16,7 +16,7 @@ class ImagePublisher():
         self.pub_topic = "/test_img"
         self.image_pub = rospy.Publisher(self.pub_topic, Image, queue_size=1)
         self.bridge= CvBridge()
-        image = cv2.imread("./test_pics/13.png")
+        image = cv2.imread("./test_pics/7.png")
         image_message = self.bridge.cv2_to_imgmsg(image, encoding="bgr8")
         print(image_message)
         self.image_pub.publish(image_message)
