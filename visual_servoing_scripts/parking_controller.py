@@ -8,7 +8,6 @@ from visual_servoing.msg import ConeLocation, ParkingError
 from ackermann_msgs.msg import AckermannDriveStamped
 from visualization_msgs.msg import Marker
 
-#Copied from visual servoing lab, meant for following line in city
 class ParkingController():
     """
     A controller for parking in front of a cone.
@@ -26,8 +25,13 @@ class ParkingController():
             ParkingError, queue_size=10)
         self.marker_pub = rospy.Publisher("/cone_marker", Marker, queue_size=2)
 
+        self.line_following = rospy.get_param("~follow_lines", 0)
+
         self.use_velocity = 0.5 # m/s
-        self.parking_distance = 0.1 # meters; try playing with this number!
+        if self.line_following:
+            self.parking_distance = 0.1 # meters; try playing with this number!
+        else:
+            self.parking_distance = 0.5 # m
         self.backup_fraction = 0.4
         self.relative_x = 0
         self.relative_y = 0
@@ -37,7 +41,7 @@ class ParkingController():
         self.park_distance_threshold = .075
         self.angle_threshold = 5 * np.pi/180 # 5 degrees but in radians
     
-        self.kp = 1
+        self.kp = 0.5
         self.kd = 0
 
         #Other variables for PID controller
