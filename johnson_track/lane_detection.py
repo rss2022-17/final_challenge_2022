@@ -283,9 +283,8 @@ def get_trajectory(image):
     closest_line_left, closest_line_right = hough_section(canny_edge_image,0.45,0.5, 0.48, 150, new_midline, image.copy())
     steps = [.49,.48,.47,.46,.45]
     left_points,right_points = trajectory_rails(image, closest_line_left,closest_line_right,steps)
-    if (np.abs(all_left_points[-1][0] - left_points[0][0]) < 50):
+    if (np.abs(all_left_points[-1][0] - left_points[0][0]) < 50) and (np.abs(all_right_points[-1][0] - right_points[0][0]) < 50):
         all_left_points.extend(left_points)
-    if (np.abs(all_right_points[-1][0] - right_points[0][0]) < 50):
         all_right_points.extend(right_points)
 
     new_midline = (all_left_points[-1][0] + all_right_points[-1][0])/2.0
@@ -293,9 +292,8 @@ def get_trajectory(image):
     closest_line_left, closest_line_right = hough_section(canny_edge_image,0.4,0.45, 0.43, 50, new_midline, image.copy())
     steps = [.44,.43,.42,.41]
     left_points,right_points = trajectory_rails(image, closest_line_left,closest_line_right,steps)
-    if (np.abs(all_left_points[-1][0] - left_points[0][0]) < 50):
+    if (np.abs(all_left_points[-1][0] - left_points[0][0]) < 50) and (np.abs(all_right_points[-1][0] - right_points[0][0]) < 50):
         all_left_points.extend(left_points)
-    if (np.abs(all_right_points[-1][0] - right_points[0][0]) < 50):
         all_right_points.extend(right_points)
 
     print(all_left_points)
