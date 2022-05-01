@@ -16,7 +16,7 @@ from visual_servoing.msg import ConeLocationPixel # custom message
 from homography_transformer import HomographyTransformer
 
 # import your color segmentation algorithm; call this function in ros_image_callback!
-from lane_detection import track_trajectory
+from lane_detection import get_trajectory
 
 class LaneTrajectory():
     """
@@ -58,7 +58,7 @@ class LaneTrajectory():
         print(image.shape[:2])
         image_y, image_x = image.shape[:2]
 
-        trajectory_sides = track_trajectory(image)
+        trajectory_sides = get_trajectory(image)
 
         debug_img = image.copy()
         
@@ -85,6 +85,7 @@ class LaneTrajectory():
         self.traj_pub.publish(self.trajectory.toPoseArray())
         self.trajectory.publish_viz()
 
+        cv2.imwrite("debug.png", debug_img)
         if (self.debug_pub.get_num_connections() > 0): self.debug_pub.publish(self.bridge.cv2_to_imgmsg(debug_img, "bgr8"))
 
 
