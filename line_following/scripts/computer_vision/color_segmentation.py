@@ -249,26 +249,25 @@ def lf_color_segmentation(img, template=None, pct=0.6, visualize=False): #pct sp
 		blue_angles = []
 
 		# add the different groups by color to the base image
-		if visualize:
-			#				[RED, 		 BLUE, 		  BLACK]
-			group_colors = [(0, 0, 255), (255, 0, 0), (25, 25, 25)]
-			for g_idx, group in enumerate(segmented):
-				# print("Group "+str(g_idx)+" has angle: "+str(group[0][0][1]))
-				for l_idx, l in enumerate(group):
-					rho = l[0][0]
-					theta = l[0][1]
-					a = np.cos(theta)
-					b = np.sin(theta)
-					x0 = a * rho
-					y0 = b * rho
+		#				[RED, 		 BLUE, 		  BLACK]
+		group_colors = [(0, 0, 255), (255, 0, 0), (25, 25, 25)]
+		for g_idx, group in enumerate(segmented):
+			# print("Group "+str(g_idx)+" has angle: "+str(group[0][0][1]))
+			for l_idx, l in enumerate(group):
+				rho = l[0][0]
+				theta = l[0][1]
+				a = np.cos(theta)
+				b = np.sin(theta)
+				x0 = a * rho
+				y0 = b * rho
 
-					if (g_idx == 1): blue_angles.append(theta)
+				if (g_idx == 1): blue_angles.append(theta)
 
-					pt1 = (int(x0 + 1000*(-b)), int(y0 + 1000*(a)))
-					pt2 = (int(x0 - 1000*(-b)), int(y0 - 1000*(a)))
-					
-					# UNCOMMENT THE LINE BELOW TO SEE THE LINES ON THE IMAGE!
-					# cv2.line(img, pt1, pt2, group_colors[g_idx], 2, cv2.LINE_AA)
+				pt1 = (int(x0 + 1000*(-b)), int(y0 + 1000*(a)))
+				pt2 = (int(x0 - 1000*(-b)), int(y0 - 1000*(a)))
+				
+				# UNCOMMENT THE LINE BELOW TO SEE THE LINES ON THE IMAGE!
+				# if visualize: cv2.line(img, pt1, pt2, group_colors[g_idx], 2, cv2.LINE_AA)
 
 
 		blue_sqr_dst_from_horizontal = (np.array(blue_angles) - np.pi/2)**2
