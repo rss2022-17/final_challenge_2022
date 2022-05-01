@@ -41,8 +41,8 @@ def cd_color_segmentation(img, template=None):
 		lower_bounds = template[0]
 		upper_bounds = template[1]
 	else:
-		lower_bounds = (5, 200, 100)
-		upper_bounds = (35, 255, 255)
+		lower_bounds = (10, 10, 120)
+		upper_bounds = (30,255, 255)
 	hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) #converts bgr to hsv
 	mask = cv2.inRange(hsv_img, lower_bounds, upper_bounds) #creates binary image with 1 = within bounds given
 	element = np.ones((5, 5), np.uint8) #kernel for erosion/dilation
@@ -94,7 +94,6 @@ def isolate_orange(img):
 	test_img = np.dstack((hsv_img[:, :, 0]*hue_mask, hsv_img[:, :, 1]*hue_mask, hsv_img[:, :, 2]*hue_mask))
 	
 	image_print(cv2.cvtColor(test_img, cv2.COLOR_HSV2BGR))
-
 
 
 	color_mask = lower_hue_mask * upper_hue_mask * saturation_mask * value_mask
@@ -180,7 +179,7 @@ def self_intersections(lines):
 
 
 
-def lf_color_segmentation(img, template=None, pct=0.5, visualize=False): #pct specifies which portion of the image to look in
+def lf_color_segmentation(img, template=None, pct=0.6, visualize=False): #pct specifies which portion of the image to look in
 	"""
 	Implement orange line detection using color masking and hough transforms
 	Input:
@@ -193,6 +192,16 @@ def lf_color_segmentation(img, template=None, pct=0.5, visualize=False): #pct sp
 	########## YOUR CODE STARTS HERE ##########
 	horizontal_line_step = 60
 	pixel_cutoff = pct
+	horizontal_angle_margin = 0.1
+
+
+	## ORANGE MASK
+	orange_lower_bounds = (10, 0, 120)
+	orange_upper_bounds = (30,255, 255)
+
+	## BROWN MASK
+	brown_lower_bounds = (10, 0, 0)
+	brown_upper_bounds = (50,255, 120)
 
 	# image_print(img) #prints image
 	# bounding values: change for different lighting conditions in HSV
@@ -212,26 +221,32 @@ def lf_color_segmentation(img, template=None, pct=0.5, visualize=False): #pct sp
 	element = np.ones((5, 5), np.uint8) #kernel for erosion/dilation
 	erosion_dst = cv2.erode(mask, element, iterations=1) #shrinks mask area down
 	mask = cv2.dilate(erosion_dst, element, iterations=1) #increases mask area
-	# image_print(mask, "mask")
+
+	if visualize: image_print(mask, "mask")
 
 	### Now that we have a mask, do line detection
 	canny_img = cv2.Canny(mask, 100, 200)
 
 	# HoughLines(img, rho, theta, threshold, lines,)
-	lines = cv2.HoughLines(canny_img, 1, np.pi/180, 50, None, 0, 0)
-
-	# Add horizontal lines to the image [r = y-int, theta = pi/2]
-	for intercept in range(0, int(img_shape[0] * pixel_cutoff), horizontal_line_step):
-		# y = 0 is at the top
-		lines = np.vstack((lines, np.array([[img_shape[0] - intercept, np.pi/2]])[np.newaxis, :, :]))
-
+	lines = cv2.HoughLines(canny_img, 1, np.pi/180, 60, None, 0, 0)
 
 	if lines is not None:
 		# Create three groups of lines (one of which should be completely horizontal)
-		segmented = segment_angle_kmeans(lines, k=3)
+		segmented = segment_angle_kmeans(lines, k=2)
 
 		# sorted by theta's distance from pi/2, reversed so we look at more vertical lines first
 		segmented = sorted(segmented, key=lambda g: (g[0][0][1]-np.pi/2)**2, reverse=True) 
+
+		
+		# Add horizontal lines to the image after segmentation! [r = y-int, theta = pi/2]
+		horiz_lines = np.array([[img_shape[0], np.pi/2]])[np.newaxis, :, :]
+		for intercept in range(horizontal_line_step, int(img_shape[0] * pixel_cutoff), horizontal_line_step):
+			# y = 0 is at the top
+			horiz_lines = np.vstack((horiz_lines, np.array([[img_shape[0] - intercept, np.pi/2]])[np.newaxis, :, :]))
+
+		segmented.append(horiz_lines.tolist())
+
+		blue_angles = []
 
 		# add the different groups by color to the base image
 		if visualize:
@@ -246,17 +261,27 @@ def lf_color_segmentation(img, template=None, pct=0.5, visualize=False): #pct sp
 					b = np.sin(theta)
 					x0 = a * rho
 					y0 = b * rho
+
+					if (g_idx == 1): blue_angles.append(theta)
+
 					pt1 = (int(x0 + 1000*(-b)), int(y0 + 1000*(a)))
 					pt2 = (int(x0 - 1000*(-b)), int(y0 - 1000*(a)))
 					
 					# UNCOMMENT THE LINE BELOW TO SEE THE LINES ON THE IMAGE!
 					# cv2.line(img, pt1, pt2, group_colors[g_idx], 2, cv2.LINE_AA)
 
+
+		blue_sqr_dst_from_horizontal = (np.array(blue_angles) - np.pi/2)**2
+		max_blue_dist_from_horizontal = np.sqrt(np.max(blue_sqr_dst_from_horizontal))
+		
+		# image_print(img, "test")
+
 		# first two line groupings are theoretically the lines we care about
 		# the third line group should be the horizontal group
 		main_intersections = np.array(segmented_intersections(segmented[:2])) # intersect first two
 		lower_intersections = np.array(segmented_intersections([segmented[0], segmented[2]])) # intersect first with horizontal
 		upper_intersections = np.array(segmented_intersections(segmented[1:])) # intersect second with horizontal
+
 
 		# average point of the two main classes intersecting, used to tell us where to switch line classes
 		average_point = np.rint(np.average(main_intersections, axis=0)).astype(np.int32)
@@ -268,35 +293,66 @@ def lf_color_segmentation(img, template=None, pct=0.5, visualize=False): #pct sp
 		# draw them (but not anymore)
 		# for idx, pt in enumerate(lower_intersections_to_use): cv2.circle(img, tuple(pt), 5, (0, 255, 255), 1)
 
-		# finds the points intersecting with the upper classification and the horizontal lines
-		filter_upper = upper_intersections[:,:,1] < average_point[0][1]
-		upper_intersections_to_use = upper_intersections[filter_upper, :]
-		# draw them (but not anymore)
-		# for idx, pt in enumerate(upper_intersections_to_use): cv2.circle(img, tuple(pt), 5, (255, 0, 255), 1)
 
-		# create a trajectory using the average intersection point moving upwards
-		yboundary = average_point[0][1]
-		points_in_trajectory = [tuple(average_point[0].tolist())]
-		for intercept in range(0, int(img_shape[0]*pixel_cutoff), horizontal_line_step):
-			# y = 0 is at the top
-			# lines = np.vstack((lines, np.array([[img_shape[0] - intercept, np.pi/2]])[np.newaxis, :, :]))
-			yval = img_shape[0] - intercept
-			
-			# are we considering the lower class?
-			if yval > yboundary:
-				# yes! look at that
+		# are we making a 90 degree turn?
+		if max_blue_dist_from_horizontal <= horizontal_angle_margin:
+			# yes, get the self intersections on the horizontal track and determine the point mass
+			second_self_intersections = np.array(segmented_intersections([segmented[1], segmented[1]]))
+			point_mass = np.rint(np.average(second_self_intersections, axis=0)).astype(np.int32)
+			# for idx, pt in enumerate(second_self_intersections): 
+			# 	print(repr(tuple(pt.tolist())))	
+			# 	cv2.circle(img, tuple(pt[0].tolist()), 5, (255,255,255), 1)
+			# cv2.circle(img, tuple(point_mass[0].tolist()), 5, (255, 255, 255), 1)
+
+			# don't bother trying to add more points to consideration on the nearly horizontal case
+			# just add the lower classifications, the overall intersection, and the horizontal point mass
+			points_in_trajectory = []
+			y_boundary = average_point[0][1]
+			for intercept in range(0, img_shape[0] - y_boundary, horizontal_line_step):
+				yval = img_shape[0] - intercept
+
 				new_filter = lower_intersections_to_use[:,1] == yval
-				new_point = np.average(lower_intersections_to_use[new_filter,:],axis=0).astype(np.int32)
+				new_point = np.average(lower_intersections_to_use[new_filter,:], axis=0).astype(np.int32)
+				points_in_trajectory.append(new_point)
 
-			else:
-				# no! look at  the upper class
-				new_filter = upper_intersections_to_use[:,1] == yval
-				new_point = np.average(upper_intersections_to_use[new_filter,:], axis=0).astype(np.int32)
-			
-			points_in_trajectory.append(tuple(new_point.tolist()))
+			points_in_trajectory.append(tuple(average_point[0].tolist()))
+			points_in_trajectory.append(tuple(point_mass[0].tolist()))
 
-		# sort the points from nearest to the bottom to the farthest
-		points_in_trajectory = sorted(points_in_trajectory, key=lambda p: p[1], reverse=True)
+
+		else:
+			# no, either the track is completely straight or it has some curve (but not near 90deg turn)
+
+			# finds the points intersecting with the upper classification and the horizontal lines
+			filter_upper = upper_intersections[:,:,1] < average_point[0][1]
+			upper_intersections_to_use = upper_intersections[filter_upper, :]
+			# draw them (but not anymore)
+			# for idx, pt in enumerate(upper_intersections_to_use): cv2.circle(img, tuple(pt), 5, (255, 0, 255), 1)
+
+			# create a trajectory using the average intersection point moving upwards
+			yboundary = average_point[0][1]
+			points_in_trajectory = [tuple(average_point[0].tolist())]
+			for intercept in range(0, int(img_shape[0]*pixel_cutoff), horizontal_line_step):
+				# y = 0 is at the top
+				# lines = np.vstack((lines, np.array([[img_shape[0] - intercept, np.pi/2]])[np.newaxis, :, :]))
+				yval = img_shape[0] - intercept
+				
+				# are we considering the lower class?
+				if yval > yboundary:
+					# yes! look at that
+					new_filter = lower_intersections_to_use[:,1] == yval
+					new_point = np.average(lower_intersections_to_use[new_filter,:],axis=0).astype(np.int32)
+
+				else:
+					# no! look at  the upper class
+					new_filter = upper_intersections_to_use[:,1] == yval
+					new_point = np.average(upper_intersections_to_use[new_filter,:], axis=0).astype(np.int32)
+				
+				points_in_trajectory.append(tuple(new_point.tolist()))
+
+			# sort the points from nearest to the bottom to the farthest only when we're not doing a 90 degree turn
+			points_in_trajectory = sorted(points_in_trajectory, key=lambda p: p[1], reverse=True)
+
+		# end if-else
 
 		if visualize:
 			# paint the trajectory on the image using a dark-to-teal gradient
@@ -320,5 +376,15 @@ def lf_color_segmentation(img, template=None, pct=0.5, visualize=False): #pct sp
 
 
 if __name__ == '__main__':
-	_img = cv2.imread("./test_images_track/city-driving-line-following-3.png")
-	lf_color_segmentation(_img, visualize=True)
+	_img = cv2.imread("./test_images_track/city-driving-line-following.png")
+
+	# orange mask
+	lower_bounds = (10, 10, 120)
+	upper_bounds = (30,255, 255)
+
+	
+	# brown mask
+	# lower_bounds = (10, 0, 0)
+	# upper_bounds = (50,255, 110)
+
+	lf_color_segmentation(_img, template=[lower_bounds, upper_bounds], visualize=True)
