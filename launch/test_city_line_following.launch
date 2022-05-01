@@ -12,8 +12,8 @@
 
 	<node pkg="final_challenge" type="orange_line_detector.py" name="Trajectory_planner" output="screen">
 		<param name="image_topic" value="/zed/zed_node/rgb/image_rect_color"/>
-		<param name="active_state", "/line_follower"/>
-		<param name="start_active", "True"/> 
+		<param name="active_state" value="/line_follower"/>
+		<param name="start_active" value="True"/> 
 	</node>
 
 	<node pkg="wall_follower" type="safety_controller.py" name="safety_controller">
