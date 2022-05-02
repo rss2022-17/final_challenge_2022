@@ -232,7 +232,8 @@ def get_trajectory(image):
     if closest_line_left is None or closest_line_right is None: return np.array([0, 0])
 
     # steps = [.9,.8,.7, .65, .6, .55, .5]
-    steps = [.9,.8,.7,.6,.5]
+    # steps = [.9,.8,.7,.6,.5]
+    stpes = [.5]
     left_points,right_points = trajectory_rails(image, closest_line_left,closest_line_right,steps)
     all_left_points.extend(left_points)
     all_right_points.extend(right_points)
@@ -243,7 +244,8 @@ def get_trajectory(image):
     if closest_line_left is None or closest_line_right is None: return np.array([0, 0])
 
     # steps = [.49,.48,.47,.46,.45]
-    steps = [.47,.45]
+    # steps = [.47,.45]
+    steps = [.45]
     left_points,right_points = trajectory_rails(image, closest_line_left,closest_line_right,steps)
     if (np.abs(all_left_points[-1][0] - left_points[0][0]) < 50) and (np.abs(all_right_points[-1][0] - right_points[0][0]) < 50):
         all_left_points.extend(left_points)
