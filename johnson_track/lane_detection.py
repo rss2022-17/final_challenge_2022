@@ -90,6 +90,8 @@ def hough(image,og_image,horizontal_perc):
     threshold = 150
     while lines_pos_slope is None:
         threshold = int(threshold/2.0)
+        if threshold==0:
+            return None, None #return none if threshold doesn't detect anything with 0
         print("pos")
         print(threshold)
         lines_pos_slope = cv2.HoughLines(image,1, np.pi/180.0,threshold,srn=0,stn=0,min_theta=0,max_theta=np.pi*0.4)
@@ -102,6 +104,8 @@ def hough(image,og_image,horizontal_perc):
         print("neg")
         print(threshold)
         threshold = int(threshold/2.0)
+        if threshold==0:#return none if threshold doesn't detect anything with 0
+            return None, None
         lines_neg_slope = cv2.HoughLines(image,1, np.pi/180.0,threshold,srn=0,stn=0,min_theta=np.pi*0.6,max_theta=np.pi)
 
     #image_copy = line_visualizer(image_copy, lines_pos_slope,(255.0,0.0,0.0)) # blue
@@ -144,6 +148,8 @@ def track_trajectory(image):
     # cv2.imwrite('top_edges' + '.png',top_edges)
     horizontal_percentage = 0.6
     intersections_pos_line,intersections_neg_line = hough(bottom_edges,image,horizontal_percentage)
+    if intersections_pos_line is None:#if no lines detected return a single point at 0,0 in the trajectory
+        return np.array([0,0])
     bottom_steps = [0.9,0.8,0.7,0.6,0.5]
     bottom_trajectory_points = trajectory_rails(image,intersections_pos_line,intersections_neg_line,bottom_steps)
 
@@ -157,6 +163,8 @@ def track_trajectory(image):
     
     horizontal_percentage = 0.45
     intersections_pos_line,intersections_neg_line = hough(top_edges,image,horizontal_percentage)
+    if intersections_pos_line is None:#if no lines detected return a single point at 0,0 in the trajectory
+        return np.array([0,0])
     top_steps = [0.49,0.48,0.47,0.46,0.45,0.44,0.43,0.42]
     top_trajectory_points = trajectory_rails(image,intersections_pos_line,intersections_neg_line,top_steps)
 
