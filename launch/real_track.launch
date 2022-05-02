@@ -9,6 +9,7 @@
 		<param name="drive_topic" value="/vesc/high_level/ackermann_cmd_mux/input/nav_2"/>
 		<param name="speed" value="0.5"/>
 		<param name="lookahead" value="4"/>
+		<param name="trajectory_follow" value="False"/>
 	</node>
 	<node pkg="final_challenge" type="lane_trajectory.py" name="Trajectory_planner" output="screen">
 		<param name="image_topic" value="/zed/zed_node/rgb/image_rect_color"/>
