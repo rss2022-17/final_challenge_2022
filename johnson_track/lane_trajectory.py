@@ -66,6 +66,7 @@ class LaneTrajectory():
             trajectory_left = trajectory_sides[0]
             trajectory_right = trajectory_sides[1]
             for i in range(len(trajectory_left)):
+                print("Trajectory left shape is : ", trajectory_left.shape)
                 left_x, left_y = trajectory_left[i]
                 right_x, right_y = trajectory_right[i]
 

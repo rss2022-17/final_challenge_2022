@@ -328,8 +328,8 @@ def get_trajectory(image):
     #     trajectory_image = cv2.circle(trajectory_image,point,radius=1,color=(0,0,255),thickness=-1)
     #cv2.imwrite('trajectory_image' + '.png',trajectory_image)
 
-    return trajectory_image
-    #return trajectory_points
+    # return trajectory_image
+    return trajectory_points
     # example:
     # [[[-99, 338], [-27, 300], [42, 263], [114, 225], [183, 188]], [[756, 338], [662, 300], [571, 263], [477, 225], [385, 188]]]
     # [left, right]
