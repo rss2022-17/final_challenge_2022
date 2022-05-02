@@ -243,7 +243,7 @@ def get_trajectory(image):
     if closest_line_left is None or closest_line_right is None: return np.array([0, 0])
 
     # steps = [.49,.48,.47,.46,.45]
-    steps = [.49,.47,.45]
+    steps = [.47,.45]
     left_points,right_points = trajectory_rails(image, closest_line_left,closest_line_right,steps)
     if (np.abs(all_left_points[-1][0] - left_points[0][0]) < 50) and (np.abs(all_right_points[-1][0] - right_points[0][0]) < 50):
         all_left_points.extend(left_points)
@@ -275,7 +275,15 @@ def main():
         image_path = r'C:\Users\shrey\OneDrive\Desktop\track' + str(i) + '.png'
         image = cv2.imread(image_path)
 
-        trajectory_image = get_trajectory(image)
+        trajectory_image = image.copy()
+
+        trajectory_points = get_trajectory(image)
+
+        for point in trajectory_points[0]:
+             trajectory_image = cv2.circle(trajectory_image,point,radius=1,color=(0,0,255),thickness=-1)
+        for point in trajectory_points[1]:
+             trajectory_image = cv2.circle(trajectory_image,point,radius=1,color=(0,0,255),thickness=-1)
+
         cv2.imwrite('trajectory_image' + str(i) + '.png',trajectory_image)
         #track_trajectory(image)
 
