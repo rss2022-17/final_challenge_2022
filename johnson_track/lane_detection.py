@@ -233,7 +233,7 @@ def get_trajectory(image):
 
     # steps = [.9,.8,.7, .65, .6, .55, .5]
     # steps = [.9,.8,.7,.6,.5]
-    stpes = [.5]
+    steps = [.5]
     left_points,right_points = trajectory_rails(image, closest_line_left,closest_line_right,steps)
     all_left_points.extend(left_points)
     all_right_points.extend(right_points)
