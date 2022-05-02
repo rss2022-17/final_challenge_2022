@@ -18,8 +18,8 @@ class PurePursuit(object):
     def __init__(self):
         self.odom_topic       = rospy.get_param("~odom_topic")
         self.drive_topic      = rospy.get_param("~drive_topic", "/drive")
-        self.lookahead        = 1 #starting val, will get overwritten by trajectory callback
-        self.speed            = float(rospy.get_param("~speed", 4))
+        self.lookahead        = float(rospy.get_param("~lookahead",0.5)) #starting val, will get overwritten by trajectory callback
+        self.speed            = float(rospy.get_param("~speed", 0.5))
         #self.wrap             = # FILL IN #
         self.wheelbase_length = 0.32#
         self.shutdown_threshold = 5 #if off by then stop
@@ -42,8 +42,8 @@ class PurePursuit(object):
         self.trajectory.fromPoseArray(msg)
         self.trajectory.publish_viz(duration=0.0)
         max_curve = self.trajectory.get_starting_curvature()
-        self.lookahead = np.max((np.min((4, 1/(max_curve+1e-3))), 0.5))
-        self.speed = self.lookahead
+        #self.lookahead = np.max((np.min((4, 1/(max_curve+1e-3))), 0.5))
+        #self.speed = self.lookahead
         rospy.loginfo("1/max curve:{}".format(1/(max_curve+1e-5)))
         rospy.loginfo("Lookahead:{}".format(self.lookahead))
 
