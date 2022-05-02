@@ -31,7 +31,7 @@ class PurePursuit(object):
         #self.sqr_error_integral_pub = rospy.Publisher("/pp/sqr_error_integral", Float64, queue_size=1)
         #self.integral_error=0
         #self.odom_sub = rospy.Subscriber(self.odom_topic, Odometry, self.odom_callback, queue_size=1)
-
+        self.trajectory_steer = rospy.get_param("~trajectory_steer", True)
 
 
     def trajectory_callback(self, msg):
@@ -125,8 +125,10 @@ class PurePursuit(object):
             drive_cmd.drive.speed = 0
             self.drive_pub.publish(drive_cmd)
             return
-
-        goal = intersecting_points[-1] #take last added point (furthest along path)
+        if not self.trajectory_steer: #just take last point as goal if param says so (for use on Johnson Track)
+            goal = points[-1]
+        else:
+            goal = intersecting_points[-1] #take last added point (furthest along path)
 
         goal_msg = PointStamped()
         goal_msg.header.stamp = rospy.Time.now()
