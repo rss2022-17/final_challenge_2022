@@ -265,8 +265,8 @@ def hough_section(image, top_bound, bottom_bound, pinch, base_threshold, midline
     # # cv2.imwrite('section_traj.png',viz_image)
 
     closest_line_left, closest_line_right  = intersection_at_pinch(image,lines_pos_slope,lines_neg_slope,pinch,midline)
-    viz_image2 = line_visualizer(viz_image2, np.array([closest_line_left]),(255.0,0.0,0.0)) # blue
-    viz_image2 = line_visualizer(viz_image2, np.array([closest_line_right]),(0.0,255.0,0.0)) # green
+    # viz_image2 = line_visualizer(viz_image2, np.array([closest_line_left]),(255.0,0.0,0.0)) # blue
+    # viz_image2 = line_visualizer(viz_image2, np.array([closest_line_right]),(0.0,255.0,0.0)) # green
     # cv2.imwrite('section_traj2.png',viz_image2)
 
     return (closest_line_left, closest_line_right)
