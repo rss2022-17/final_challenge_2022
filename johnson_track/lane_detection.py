@@ -96,8 +96,8 @@ def hough(image,og_image,horizontal_perc):
         print(threshold)
         lines_pos_slope = cv2.HoughLines(image,1, np.pi/180.0,threshold,srn=0,stn=0,min_theta=0,max_theta=np.pi*0.4)
     
-    viz_img = line_visualizer(image_copy,lines_pos_slope,(255,255,255))
-    cv2.imwrite('viz' + '.png',viz_img)
+    # viz_img = line_visualizer(image_copy,lines_pos_slope,(255,255,255))
+    # cv2.imwrite('viz' + '.png',viz_img)
 
     threshold = 150
     while lines_neg_slope is None:
@@ -115,12 +115,12 @@ def hough(image,og_image,horizontal_perc):
     intersections_pos_slope = intersection_to_horizontal(image_copy, lines_pos_slope,horizontal_perc)
     intersections_neg_slope = intersection_to_horizontal(image_copy, lines_neg_slope,horizontal_perc)
 
-    image_copy = line_visualizer(image_copy, np.array([intersections_pos_slope]),(0.0,255.0,255.0)) # yellow
-    image_copy = line_visualizer(image_copy, np.array([intersections_neg_slope]),(0.0,255.0,255.0)) # yellow
+    # image_copy = line_visualizer(image_copy, np.array([intersections_pos_slope]),(0.0,255.0,255.0)) # yellow
+    # image_copy = line_visualizer(image_copy, np.array([intersections_neg_slope]),(0.0,255.0,255.0)) # yellow
 
-    image_copy = cv2.circle(image_copy,(0,int(image_copy.shape[0]*.4)),radius=0,color=(0,0,255),thickness=-1)
+    # image_copy = cv2.circle(image_copy,(0,int(image_copy.shape[0]*.4)),radius=0,color=(0,0,255),thickness=-1)
 
-    cv2.imwrite('hough_lines' + '.png',image_copy)
+    # cv2.imwrite('hough_lines' + '.png',image_copy)
 
     return [intersections_pos_slope,intersections_neg_slope]
 
@@ -168,20 +168,20 @@ def track_trajectory(image):
     top_steps = [0.49,0.48,0.47,0.46,0.45,0.44,0.43,0.42]
     top_trajectory_points = trajectory_rails(image,intersections_pos_line,intersections_neg_line,top_steps)
 
-    trajectory_image = line_visualizer(trajectory_image,np.array([intersections_neg_line]),(255,0,0))
-    cv2.imwrite('top_edges' + '.png',top_edges)
-    cv2.imwrite('trajectory_viz' + '.png',trajectory_image)
+    # trajectory_image = line_visualizer(trajectory_image,np.array([intersections_neg_line]),(255,0,0))
+    # cv2.imwrite('top_edges' + '.png',top_edges)
+    # cv2.imwrite('trajectory_viz' + '.png',trajectory_image)
 
 
 
     trajectory_points = [bottom_trajectory_points[0] + top_trajectory_points[0],bottom_trajectory_points[1] + top_trajectory_points[1]]
 
     
-    for point in trajectory_points[0]:
-        trajectory_image = cv2.circle(trajectory_image,point,radius=1,color=(0,0,255),thickness=-1)
-    for point in trajectory_points[1]:
-        trajectory_image = cv2.circle(trajectory_image,point,radius=1,color=(0,0,255),thickness=-1)
-    cv2.imwrite('trajectory_image' + '.png',trajectory_image)
+    # for point in trajectory_points[0]:
+    #     trajectory_image = cv2.circle(trajectory_image,point,radius=1,color=(0,0,255),thickness=-1)
+    # for point in trajectory_points[1]:
+    #     trajectory_image = cv2.circle(trajectory_image,point,radius=1,color=(0,0,255),thickness=-1)
+    # cv2.imwrite('trajectory_image' + '.png',trajectory_image)
 
     return trajectory_points
 
@@ -225,7 +225,7 @@ def hough_section(image, top_bound, bottom_bound, pinch, base_threshold, midline
     section = cv2.rectangle(section, (0,0), (section.shape[1],int(section.shape[0]*top_bound)), color=0.0, thickness=-1)  # cut off top
     section = cv2.rectangle(section,(0,int(section.shape[0]*bottom_bound)), (section.shape[1],section.shape[0]), color=0.0, thickness=-1) # cut off bottom
 
-    cv2.imwrite('section.png',section)
+    # cv2.imwrite('section.png',section)
 
     threshold = base_threshold
     lines_pos_slope = cv2.HoughLines(section,1, np.pi/180.0,threshold,srn=0,stn=0,min_theta=0,max_theta=np.pi*0.4)
@@ -253,21 +253,21 @@ def hough_section(image, top_bound, bottom_bound, pinch, base_threshold, midline
         lines_neg_slope = cv2.HoughLines(section,1, np.pi/180.0,threshold,srn=0,stn=0,min_theta=np.pi*0.6,max_theta=np.pi)
 
 
-    viz_image2 = viz_image.copy()
+    # viz_image2 = viz_image.copy()
     
-    viz_image = cv2.circle(viz_image,(int(viz_image.shape[1]*.5),int(viz_image.shape[0]*.5)),radius=0,color=(0,0,255),thickness=-1)
-    viz_image = line_visualizer(viz_image, lines_pos_slope,(255.0,0.0,0.0)) # blue
-    viz_image = line_visualizer(viz_image, lines_neg_slope,(0.0,255.0,0.0)) # green
-    viz_image = line_visualizer(viz_image, horizontal_line,(0.0,0.0,255.0)) # green
+    # viz_image = cv2.circle(viz_image,(int(viz_image.shape[1]*.5),int(viz_image.shape[0]*.5)),radius=0,color=(0,0,255),thickness=-1)
+    # # viz_image = line_visualizer(viz_image, lines_pos_slope,(255.0,0.0,0.0)) # blue
+    # # viz_image = line_visualizer(viz_image, lines_neg_slope,(0.0,255.0,0.0)) # green
+    # # viz_image = line_visualizer(viz_image, horizontal_line,(0.0,0.0,255.0)) # green
 
 
 
-    cv2.imwrite('section_traj.png',viz_image)
+    # # cv2.imwrite('section_traj.png',viz_image)
 
     closest_line_left, closest_line_right  = intersection_at_pinch(image,lines_pos_slope,lines_neg_slope,pinch,midline)
     viz_image2 = line_visualizer(viz_image2, np.array([closest_line_left]),(255.0,0.0,0.0)) # blue
     viz_image2 = line_visualizer(viz_image2, np.array([closest_line_right]),(0.0,255.0,0.0)) # green
-    cv2.imwrite('section_traj2.png',viz_image2)
+    # cv2.imwrite('section_traj2.png',viz_image2)
 
     return (closest_line_left, closest_line_right)
 
@@ -322,10 +322,10 @@ def get_trajectory(image):
 
     trajectory_points = [all_left_points, all_right_points]
 
-    for point in trajectory_points[0]:
-        trajectory_image = cv2.circle(trajectory_image,point,radius=1,color=(0,0,255),thickness=-1)
-    for point in trajectory_points[1]:
-        trajectory_image = cv2.circle(trajectory_image,point,radius=1,color=(0,0,255),thickness=-1)
+    # for point in trajectory_points[0]:
+    #     trajectory_image = cv2.circle(trajectory_image,point,radius=1,color=(0,0,255),thickness=-1)
+    # for point in trajectory_points[1]:
+    #     trajectory_image = cv2.circle(trajectory_image,point,radius=1,color=(0,0,255),thickness=-1)
     #cv2.imwrite('trajectory_image' + '.png',trajectory_image)
 
     return trajectory_image
