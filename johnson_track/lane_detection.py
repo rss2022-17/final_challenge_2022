@@ -280,7 +280,7 @@ def main():
     trajectory_image = image.copy()
 
     trajectory_points = get_trajectory(image)
-    print(trajectory_points)
+    #print(trajectory_points)
 
     for point in trajectory_points[0]:
             trajectory_image = cv2.circle(trajectory_image,point,radius=1,color=(0,0,255),thickness=-1)

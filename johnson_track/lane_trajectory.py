@@ -55,7 +55,7 @@ class LaneTrajectory():
 
         self.trajectory.clear()
         image = self.bridge.imgmsg_to_cv2(image_msg, "bgr8")
-        print(image.shape[:2])
+        #print(image.shape[:2])
         image_y, image_x = image.shape[:2]
 
         trajectory_sides = get_trajectory(image)
@@ -65,7 +65,7 @@ class LaneTrajectory():
         if trajectory_sides is not None: # todo: add something in lane_detection that allows this to be none
             trajectory_left = trajectory_sides[0]
             trajectory_right = trajectory_sides[1]
-            print(trajectory_sides)
+            #print(trajectory_sides)
             for i in range(len(trajectory_left)):
                 # print("Trajectory left shape is : ", trajectory_left.shape)
                 left_x, left_y = trajectory_left[i]
@@ -88,7 +88,7 @@ class LaneTrajectory():
 
         self.traj_pub.publish(self.trajectory.toPoseArray())
         self.trajectory.publish_viz()
-        print("in image callback2!")
+        #print("in image callback2!")
 
         cv2.imwrite("debug.png", debug_img)
         if (self.debug_pub.get_num_connections() > 0): self.debug_pub.publish(self.bridge.cv2_to_imgmsg(debug_img, "bgr8"))
