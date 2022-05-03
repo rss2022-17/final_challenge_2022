@@ -227,6 +227,7 @@ def get_trajectory(image):
     all_left_points = []
     all_right_points = []
     
+    # ------------------- BOTTOM -------------------
     closest_line_left, closest_line_right = hough_section(canny_edge_image,0.5,1.0, 0.6, 150, image.shape[1] / 2.0, image.copy())
 
     if closest_line_left is None or closest_line_right is None: return None #np.array([0, 0])
@@ -240,8 +241,9 @@ def get_trajectory(image):
 
     new_midline = (all_left_points[-1][0] + all_right_points[-1][0])/2.0
 
+    # ------------------- TOP -------------------
     closest_line_left, closest_line_right = hough_section(canny_edge_image,0.45,0.5, 0.48, 150, new_midline, image.copy())
-    if closest_line_left is None or closest_line_right is None: return None #np.array([0, 0])
+    if closest_line_left is None or closest_line_right is None: return [all_left_points, all_right_points] #np.array([0, 0])
 
     # steps = [.49,.48,.47,.46,.45]
     # steps = [.47,.45]
@@ -251,11 +253,10 @@ def get_trajectory(image):
         all_left_points.extend(left_points)
         all_right_points.extend(right_points)
 
-    new_midline = (all_left_points[-1][0] + all_right_points[-1][0])/2.0
+    # new_midline = (all_left_points[-1][0] + all_right_points[-1][0])/2.0
 
-    closest_line_left, closest_line_right = hough_section(canny_edge_image,0.4,0.45, 0.43, 50, new_midline, image.copy())
-    if closest_line_left is None or closest_line_right is None: return None #np.array([0, 0])
-
+    # closest_line_left, closest_line_right = hough_section(canny_edge_image,0.4,0.45, 0.43, 50, new_midline, image.copy())
+    # if closest_line_left is None or closest_line_right is None: return None #np.array([0, 0])
     # steps = [.44,.43,.42,.41]
     # left_points,right_points = trajectory_rails(image, closest_line_left,closest_line_right,steps)
     # if (np.abs(all_left_points[-1][0] - left_points[0][0]) < 50) and (np.abs(all_right_points[-1][0] - right_points[0][0]) < 50):
@@ -273,26 +274,28 @@ def get_trajectory(image):
 
 
 def main():
-    for i in range(1,18): # (1,18)
-        image_path = r'C:\Users\shrey\OneDrive\Desktop\track' + str(i) + '.png'
-        image = cv2.imread(image_path)
+    image_path = r'C:\Users\shrey\OneDrive\Desktop\track_test.png'
+    image = cv2.imread(image_path)
 
-        trajectory_image = image.copy()
+    trajectory_image = image.copy()
 
-        trajectory_points = get_trajectory(image)
+    trajectory_points = get_trajectory(image)
+    print(trajectory_points)
 
-        for point in trajectory_points[0]:
-             trajectory_image = cv2.circle(trajectory_image,point,radius=1,color=(0,0,255),thickness=-1)
-        for point in trajectory_points[1]:
-             trajectory_image = cv2.circle(trajectory_image,point,radius=1,color=(0,0,255),thickness=-1)
+    for point in trajectory_points[0]:
+            trajectory_image = cv2.circle(trajectory_image,point,radius=1,color=(0,0,255),thickness=-1)
+    for point in trajectory_points[1]:
+            trajectory_image = cv2.circle(trajectory_image,point,radius=1,color=(0,0,255),thickness=-1)
 
-        cv2.imwrite('trajectory_image' + str(i) + '.png',trajectory_image)
-        #track_trajectory(image)
+    image_path = r'C:\Users\shrey\OneDrive\Desktop\aaa.png'
+
+    cv2.imwrite(image_path,trajectory_image)
+    #track_trajectory(image)
 
 
-        # cv2.imwrite('blur.png',blur)
-        #cv2.imwrite('final_edges_' + str(i) + '.png',final_edges)
-        #cv2.imwrite('hough_lines_' + str(i) + '.png',disp_image)
+    # cv2.imwrite('blur.png',blur)
+    #cv2.imwrite('final_edges_' + str(i) + '.png',final_edges)
+    #cv2.imwrite('hough_lines_' + str(i) + '.png',disp_image)
 
 if __name__ == "__main__":
     main()
