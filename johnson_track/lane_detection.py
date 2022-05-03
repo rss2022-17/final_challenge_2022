@@ -229,7 +229,7 @@ def get_trajectory(image):
     
     closest_line_left, closest_line_right = hough_section(canny_edge_image,0.5,1.0, 0.6, 150, image.shape[1] / 2.0, image.copy())
 
-    if closest_line_left is None or closest_line_right is None: return np.array([0, 0])
+    if closest_line_left is None or closest_line_right is None: return None #np.array([0, 0])
 
     # steps = [.9,.8,.7, .65, .6, .55, .5]
     # steps = [.9,.8,.7,.6,.5]
@@ -241,7 +241,7 @@ def get_trajectory(image):
     new_midline = (all_left_points[-1][0] + all_right_points[-1][0])/2.0
 
     closest_line_left, closest_line_right = hough_section(canny_edge_image,0.45,0.5, 0.48, 150, new_midline, image.copy())
-    if closest_line_left is None or closest_line_right is None: return np.array([0, 0])
+    if closest_line_left is None or closest_line_right is None: return None #np.array([0, 0])
 
     # steps = [.49,.48,.47,.46,.45]
     # steps = [.47,.45]
@@ -254,7 +254,7 @@ def get_trajectory(image):
     new_midline = (all_left_points[-1][0] + all_right_points[-1][0])/2.0
 
     closest_line_left, closest_line_right = hough_section(canny_edge_image,0.4,0.45, 0.43, 50, new_midline, image.copy())
-    if closest_line_left is None or closest_line_right is None: return np.array([0, 0])
+    if closest_line_left is None or closest_line_right is None: return None #np.array([0, 0])
 
     # steps = [.44,.43,.42,.41]
     # left_points,right_points = trajectory_rails(image, closest_line_left,closest_line_right,steps)
