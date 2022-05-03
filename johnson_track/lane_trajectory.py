@@ -65,8 +65,9 @@ class LaneTrajectory():
         if trajectory_sides is not None: # todo: add something in lane_detection that allows this to be none
             trajectory_left = trajectory_sides[0]
             trajectory_right = trajectory_sides[1]
+            print(trajectory_sides)
             for i in range(len(trajectory_left)):
-                print("Trajectory left shape is : ", trajectory_left.shape)
+                # print("Trajectory left shape is : ", trajectory_left.shape)
                 left_x, left_y = trajectory_left[i]
                 right_x, right_y = trajectory_right[i]
 
@@ -82,7 +83,8 @@ class LaneTrajectory():
 
                 new_point = Point32(x_avg, y_avg, 0)
                 self.trajectory.addPoint(new_point)
-
+        else:
+            self.trajectory.addPoint(Point32(0,0,0))
 
         self.traj_pub.publish(self.trajectory.toPoseArray())
         self.trajectory.publish_viz()
