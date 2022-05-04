@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from distutils.log import debug
+import queue
 import numpy as np
 import rospy
 from utils import LineTrajectory
@@ -34,6 +35,10 @@ class OrangeLineDetector():
         self.traj_pub = rospy.Publisher(self.traj_topic, PoseArray, queue_size=10)
         self.image_topic = rospy.get_param("~image_topic", "zed/zed_node/rgb/image_rect_color")
         self.line_follower_state_topic = rospy.get_param("~active_state", "/line_follower")
+
+
+        self.turn_state_pub = rospy.Publisher("/turn_state", Bool, queue_size=10)
+        self.turn_left_pub = rospy.Publisher("/turn_left", Bool, queue_size=10)
 
         self.active_state = rospy.get_param("~start_active", False)
 
@@ -73,10 +78,23 @@ class OrangeLineDetector():
         trajectory_pixels = lf_color_segmentation(image, template, pct=0.5, visualize=False)
 
         debug_img = image.copy()
+
+
+        if type(trajectory_pixels) is bool: 
+            # we should do a hard tune
+
+            # publish true to /turn_state
+            # publish to /turn_left
+            self.turn_state_pub.publish(Bool(True))
+            self.turn_left_pub.publish(Bool(trajectory_pixels))
+
+            self.last_turn_left = trajectory_pixels
+
         
         if trajectory_pixels is not None and len(trajectory_pixels) > 2:
             # only reset the trajectory if we have a new one
             self.trajectory.clear()
+            self.last_turn_left = None
             for point_pixels in trajectory_pixels:
                 (x, y) = self.homography.transformUvToXy(*point_pixels)
 
@@ -84,6 +102,10 @@ class OrangeLineDetector():
 
                 new_point = Point32(x, y, 0)
                 self.trajectory.addPoint(new_point)
+
+        elif self.last_turn_left is not None:
+                self.turn_state_pub.publish(Bool(True))
+                self.turn_left_pub.publish(Bool(self.last_turn_left))
 
 
         self.traj_pub.publish(self.trajectory.toPoseArray())
