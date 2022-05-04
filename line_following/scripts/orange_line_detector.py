@@ -75,6 +75,7 @@ class OrangeLineDetector():
         debug_img = image.copy()
         
         if trajectory_pixels is not None and len(trajectory_pixels) > 2:
+            # only reset the trajectory if we have a new one
             self.trajectory.clear()
             for point_pixels in trajectory_pixels:
                 (x, y) = self.homography.transformUvToXy(*point_pixels)
@@ -86,6 +87,7 @@ class OrangeLineDetector():
 
                 new_point = Point32(x, y, 0)
                 self.trajectory.addPoint(new_point)
+
 
         self.traj_pub.publish(self.trajectory.toPoseArray())
         self.trajectory.publish_viz()
