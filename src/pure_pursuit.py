@@ -57,7 +57,7 @@ class PurePursuit(object):
             rospy.logwarn("NO POINTS FOUND, QUITTING")
             return # there is no trajectory so don't run it
         if not self.trajectory_steer: #just take last point as goal if param says so (for use on Johnson Track)
-            goal = points[-1]
+            goal = points[0]
                 
             # print(car_point.shape) 
             # print(points.shape) 
@@ -129,6 +129,7 @@ class PurePursuit(object):
                 drive_cmd.drive.steering_angle = self.last_delta
                 drive_cmd.drive.speed = self.speed
                 self.drive_pub.publish(drive_cmd)
+                rospy.logwarn("No point found intersecting my circle!")
                 return
             goal = intersecting_points[-1] #take last added point (furthest along path)
 

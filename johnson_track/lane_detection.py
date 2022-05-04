@@ -26,8 +26,8 @@ def color2grayscale(image):
 
 
 def gaussian_blur(image):
-    x_kernel = 13
-    y_kernel = 13
+    x_kernel = 5#13
+    y_kernel = 5#13
     return cv2.GaussianBlur(image,(x_kernel, y_kernel),0)
 
 def canny_edges(image):
