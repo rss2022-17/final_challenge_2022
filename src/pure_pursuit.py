@@ -32,7 +32,7 @@ class PurePursuit(object):
         #self.integral_error=0
         #self.odom_sub = rospy.Subscriber(self.odom_topic, Odometry, self.odom_callback, queue_size=1)
         self.trajectory_steer = rospy.get_param("~trajectory_steer", True)
-
+        self.last_delta = 0
 
     def trajectory_callback(self, msg):
         ''' Clears the currently followed trajectory, and loads the new one from the message
@@ -126,11 +126,11 @@ class PurePursuit(object):
                 drive_cmd = AckermannDriveStamped()
                 drive_cmd.header.stamp = rospy.Time.now()
                 drive_cmd.header.frame_id = "/base_link"
-                drive_cmd.drive.steering_angle = 0
-                drive_cmd.drive.speed = 0
+                drive_cmd.drive.steering_angle = self.last_delta
+                drive_cmd.drive.speed = self.speed
                 self.drive_pub.publish(drive_cmd)
                 return
-                goal = intersecting_points[-1] #take last added point (furthest along path)
+            goal = intersecting_points[-1] #take last added point (furthest along path)
 
         goal_msg = PointStamped()
         goal_msg.header.stamp = rospy.Time.now()
@@ -157,6 +157,7 @@ class PurePursuit(object):
         angle = np.arctan2(translated_goal[1], translated_goal[0])
         L1 = np.linalg.norm(translated_goal[0:1])
         delta = np.arctan2(2*self.wheelbase_length*np.sin(angle), L1) #steering angle
+        self.last_delta = delta
         #rospy.logwarn("about to publish drive command")
         drive_cmd = AckermannDriveStamped()
         drive_cmd.header.stamp = rospy.Time.now()
@@ -164,7 +165,7 @@ class PurePursuit(object):
         drive_cmd.drive.steering_angle = delta
         drive_cmd.drive.speed = self.speed
         self.drive_pub.publish(drive_cmd)
-        #rospy.logwarn("published drive cmd")
+        #rospy.logwarn("Steering angle:{}".format(delta))
 
 if __name__=="__main__":
     rospy.init_node("pure_pursuit")
