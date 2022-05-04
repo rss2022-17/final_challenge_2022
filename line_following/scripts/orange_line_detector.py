@@ -74,7 +74,7 @@ class OrangeLineDetector():
 
         debug_img = image.copy()
         
-        if trajectory_pixels is not None and trajectory_pixels.length() > 2:
+        if trajectory_pixels is not None and len(trajectory_pixels) > 2:
             # only reset the trajectory if we have a new one
             self.trajectory.clear()
             for point_pixels in trajectory_pixels:
