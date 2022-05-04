@@ -32,14 +32,14 @@ class OrangeLineDetector():
     def __init__(self):
         self.trajectory = LineTrajectory("/planned_trajectory")
         self.traj_topic = rospy.get_param("~traj_topic", "/trajectory/current")
-        self.traj_pub = rospy.Publisher(self.traj_topic, PoseArray, queue_size=10)
+        self.traj_pub = rospy.Publisher(self.traj_topic, PoseArray, queue_size=1)
         self.image_topic = rospy.get_param("~image_topic", "zed/zed_node/rgb/image_rect_color")
         self.line_follower_state_topic = rospy.get_param("~active_state", "/line_follower")
 
 
         self.last_turn_left = None
-        self.turn_state_pub = rospy.Publisher("/turn_state", Bool, queue_size=10)
-        self.turn_left_pub = rospy.Publisher("/turn_left", Bool, queue_size=10)
+        self.turn_state_pub = rospy.Publisher("/turn_state", Bool, queue_size=1)
+        self.turn_left_pub = rospy.Publisher("/turn_left", Bool, queue_size=1)
 
         self.active_state = rospy.get_param("~start_active", False)
 
@@ -76,7 +76,7 @@ class OrangeLineDetector():
         upper_bound = (40, 255, 255)
         template = [lower_bound, upper_bound]
 
-        trajectory_pixels = lf_color_segmentation(image, template, pct=0.5, visualize=False)
+        trajectory_pixels = lf_color_segmentation(image, template, pct=0.4, visualize=False)
 
         debug_img = image.copy()
 
@@ -90,9 +90,10 @@ class OrangeLineDetector():
             self.turn_left_pub.publish(Bool(trajectory_pixels))
 
             self.last_turn_left = trajectory_pixels
+            rospy.sleep(0.25)
 
         
-        if trajectory_pixels is not None and len(trajectory_pixels) > 2:
+        elif trajectory_pixels is not None and len(trajectory_pixels) > 2:
             # only reset the trajectory if we have a new one
             self.trajectory.clear()
             self.last_turn_left = None
