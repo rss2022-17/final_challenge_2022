@@ -37,6 +37,7 @@ class OrangeLineDetector():
         self.line_follower_state_topic = rospy.get_param("~active_state", "/line_follower")
 
 
+        self.last_turn_left = None
         self.turn_state_pub = rospy.Publisher("/turn_state", Bool, queue_size=10)
         self.turn_left_pub = rospy.Publisher("/turn_left", Bool, queue_size=10)
 
