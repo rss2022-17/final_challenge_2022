@@ -6,9 +6,9 @@
 
     <node pkg="final_challenge" type="pure_pursuit.py" name="Trajectory_follower">
 		<param name="odom_topic" value="/pf/pose/odom"/>
-		<param name="drive_topic" value="/vesc/high_level/ackermann_cmd_mux/input/nav_2"/>
+		<param name="drive_topic" value="/vesc/high_level/ackermann_cmd_mux/input/nav_3"/>
 		<param name="speed" value="0.5"/>
-		<param name="lookahead" value="0.5"/>
+		<param name="lookahead" value="1.0"/>
 	</node>
 
 	<node pkg="final_challenge" type="orange_line_detector.py" name="Trajectory_planner" output="screen">
