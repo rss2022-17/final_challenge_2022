@@ -91,8 +91,7 @@ class OrangeLineDetector():
 
             self.last_turn_left = trajectory_pixels
 
-        
-        if trajectory_pixels is not None and len(trajectory_pixels) > 2:
+        elif trajectory_pixels is not None and len(trajectory_pixels) > 2:
             # only reset the trajectory if we have a new one
             self.trajectory.clear()
             self.last_turn_left = None
