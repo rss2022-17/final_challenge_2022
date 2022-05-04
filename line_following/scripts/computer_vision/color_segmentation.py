@@ -246,6 +246,8 @@ def lf_color_segmentation(img, template=None, pct=0.6, visualize=False): #pct sp
 
 		segmented.append(horiz_lines.tolist())
 
+		if len(segmented) != 3: return None
+
 		blue_angles = []
 
 		# add the different groups by color to the base image
@@ -298,6 +300,27 @@ def lf_color_segmentation(img, template=None, pct=0.6, visualize=False): #pct sp
 			# yes, get the self intersections on the horizontal track and determine the point mass
 			second_self_intersections = np.array(segmented_intersections([segmented[1], segmented[1]]))
 			point_mass = np.rint(np.average(second_self_intersections, axis=0)).astype(np.int32)
+
+
+			x_of_point_mass = point_mass[0, 0]
+
+			# is the point mass on the left?
+			if x_of_point_mass < img_shape[0] / 2:
+				# yes! publish that we should do a hard left
+				return True
+			else:
+				# no, publish that we should do a hard right
+				return False
+
+
+
+			# /turn_state Bool 
+			# /turn_left Bool
+
+
+
+
+
 			# for idx, pt in enumerate(second_self_intersections): 
 			# 	print(repr(tuple(pt.tolist())))	
 			# 	cv2.circle(img, tuple(pt[0].tolist()), 5, (255,255,255), 1)
