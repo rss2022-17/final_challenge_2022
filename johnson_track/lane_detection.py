@@ -24,10 +24,9 @@ def color2grayscale(image):
 
     return np.uint8(white_im)
 
-
 def gaussian_blur(image):
-    x_kernel = 13
-    y_kernel = 13
+    x_kernel = 23
+    y_kernel = 23
     return cv2.GaussianBlur(image,(x_kernel, y_kernel),0)
 
 def canny_edges(image):
@@ -220,11 +219,17 @@ def hough_section(image, top_bound, bottom_bound, pinch, base_threshold, midline
     return (closest_line_left, closest_line_right)
 
 def get_trajectory(image):
+
+    #Blur image to reduce noise
     blur = gaussian_blur(color2grayscale(image))
+
+    #Gets edges from image 
     canny_edge_image = canny_edges(blur)
+
+    #Make a copy for base image
     trajectory_image = image.copy()
 
-    
+
     # 0.4 --> 1
     # 0.4 --> 0.45: pinch point at 0.43 : threshold 50 [.44,.43,.43,.41]
     # 0.45 --> 0.5: pinch point at 0.48 : threshold 50 [.49,.48,.47,.46,.45]
@@ -286,6 +291,81 @@ def get_trajectory(image):
     # nearest to the bottom to furthest from bottom
     # note: can have neg values!!!
 
+def get_trajectory2(image):
+
+    src = image
+    #Blur image to reduce noise
+    blur = gaussian_blur(color2grayscale(image))
+
+    #Gets edges from image 
+    canny_edge_image = canny_edges(blur)
+
+    cropped =  canny_edge_image[image.shape[0]//2:,:]
+    cropped = canny_edges(blur)
+
+    # Copy edges to the images that will display the results in BGR
+    cdst = cv2.cvtColor(canny_edge_image, cv2.COLOR_GRAY2BGR)
+    cdst2 = cv2.cvtColor(canny_edge_image, cv2.COLOR_GRAY2BGR) 
+    cdstP = np.copy(cdst)
+    
+    left = cv2.HoughLines(cropped, 1, np.pi / 180, 150, None, 0, 0)
+    right = cv2.HoughLines(cropped, 1, np.pi / 180, 150, None, 0, 0)
+    
+    if left is not None:
+        for i in range(0, len(left)):
+            rho = left[i][0][0]
+            theta = left[i][0][1]
+            a = np.cos(theta)
+            b = np.sin(theta)
+            x0 = a * rho
+            y0 = b * rho
+            pt1 = (int(x0 + 1000*(-b)), int(y0 + 1000*(a))) #Add back half the screen for the lines
+            pt2 = (int(x0 - 1000*(-b)), int(y0 - 1000*(a)))
+            cv2.line(cdst, pt1, pt2, (0,0,255), 3, cv2.LINE_AA)
+
+    if right is not None:
+        for i in range(0, len(right)):
+            rho = right[i][0][0]
+            theta = right[i][0][1]
+            a = np.cos(theta)
+            b = np.sin(theta)
+            x0 = a * rho
+            y0 = b * rho
+            pt1 = (int(x0 + 1000*(-b)), int(y0 + 1000*(a))) #Add back half the screen for the lines
+            pt2 = (int(x0 - 1000*(-b)), int(y0 - 1000*(a)))
+            cv2.line(cdst2, pt1, pt2, (0,0,255), 3, cv2.LINE_AA)
+
+
+    linesP = cv2.HoughLinesP(cropped, 1, np.pi / 180, 50, None, 150, 20)
+    
+    x_list = []
+    y_list = []
+    if linesP is not None:
+        for i in range(0, len(linesP)):
+            l = linesP[i][0]
+            cv2.line(cdstP, (l[0], l[1]), (l[2], l[3]), (0,0,255), 3, cv2.LINE_AA)
+            x_list.append((l[0] + l[2])/2)
+            y_list.append((l[1] + l[3])/2)
+
+    else:
+        return None
+
+    xmean = int(np.mean(x_list))
+    ymean = int(np.mean(y_list))
+    point = (xmean, ymean)
+
+    return [xmean, ymean]
+    cv2.circle(src,point,radius=5,color=(0,255,0),thickness=-1)
+    cv2.imshow("Source", src)
+    cv2.imshow("Detected Lines (in red) - Probabilistic Line Transform", cdstP)
+    cv2.waitKey(0)
+
+    
+    return 0
+def show_image(image):
+    cv2.imshow('image',image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 def main():
     for i in ['_test']:
@@ -313,4 +393,12 @@ def main():
         #cv2.imwrite('hough_lines_' + str(i) + '.png',disp_image)
 
 if __name__ == "__main__":
-    main()
+    img0 = cv2.imread('aaa.png')
+    # img = gaussian_blur(img0)
+    # show_image(img)
+    # img = canny_edges(img)
+    # show_image(img)
+    trajectory_image = img0.copy()
+    get_trajectory2(img0)
+    #main()
+    pass
