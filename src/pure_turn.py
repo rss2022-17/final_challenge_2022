@@ -21,8 +21,8 @@ class PureTurn(object):
         self.speed            = float(rospy.get_param("~speed", 0.5))
         #self.wrap             = # FILL IN #
         self.wheelbase_length = 0.32#
-        self.turn_sub = rospy.Subscriber("/turn_state/", Bool, self.turn_callback, queue_size=1)
-        self.direction_sub = rospy.Subscriber("/turn_direction/", Bool, self.direction_callback, queue_size=1)
+        self.turn_sub = rospy.Subscriber("/turn_state", Bool, self.turn_callback, queue_size=1)
+        self.direction_sub = rospy.Subscriber("/turn_left", Bool, self.direction_callback, queue_size=1)
         self.drive_pub = rospy.Publisher(self.drive_topic, AckermannDriveStamped, queue_size=1)
         self.angle = 0
 
