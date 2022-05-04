@@ -179,7 +179,7 @@ def self_intersections(lines):
 
 
 
-def lf_color_segmentation(img, template=None, pct=0.6, visualize=False): #pct specifies which portion of the image to look in
+def lf_color_segmentation(img, template=None, pct=0.6, horizontal_angle_margin=20*np.pi/180, visualize=False): #pct specifies which portion of the image to look in
 	"""
 	Implement orange line detection using color masking and hough transforms
 	Input:
@@ -192,7 +192,7 @@ def lf_color_segmentation(img, template=None, pct=0.6, visualize=False): #pct sp
 	########## YOUR CODE STARTS HERE ##########
 	horizontal_line_step = 60
 	pixel_cutoff = pct
-	horizontal_angle_margin = 0.1
+	# horizontal_angle_margin = 20 * np.pi / 180
 
 
 	## ORANGE MASK
@@ -269,7 +269,7 @@ def lf_color_segmentation(img, template=None, pct=0.6, visualize=False): #pct sp
 				pt2 = (int(x0 - 1000*(-b)), int(y0 - 1000*(a)))
 				
 				# UNCOMMENT THE LINE BELOW TO SEE THE LINES ON THE IMAGE!
-				# if visualize: cv2.line(img, pt1, pt2, group_colors[g_idx], 2, cv2.LINE_AA)
+				if visualize: cv2.line(img, pt1, pt2, group_colors[g_idx], 2, cv2.LINE_AA)
 
 
 		blue_sqr_dst_from_horizontal = (np.array(blue_angles) - np.pi/2)**2
@@ -369,6 +369,12 @@ def lf_color_segmentation(img, template=None, pct=0.6, visualize=False): #pct sp
 					new_filter = upper_intersections_to_use[:,1] == yval
 					new_point = np.average(upper_intersections_to_use[new_filter,:], axis=0).astype(np.int32)
 				
+				
+				# is the new point actually inside the orange?
+				if (mask[new_point[1]-1, new_point[0]-1] < 200): 
+					# no, skip it
+					continue
+
 				points_in_trajectory.append(tuple(new_point.tolist()))
 
 			# sort the points from nearest to the bottom to the farthest only when we're not doing a 90 degree turn
@@ -398,7 +404,7 @@ def lf_color_segmentation(img, template=None, pct=0.6, visualize=False): #pct sp
 
 
 if __name__ == '__main__':
-	_img = cv2.imread("./test_images_track/city-driving-line-following.png")
+	_img = cv2.imread("./test_images_track/anger.png")
 
 	# orange mask
 	lower_bounds = (10, 10, 120)
@@ -409,4 +415,5 @@ if __name__ == '__main__':
 	# lower_bounds = (10, 0, 0)
 	# upper_bounds = (50,255, 110)
 
-	lf_color_segmentation(_img, template=[lower_bounds, upper_bounds], visualize=True)
+	# lf_color_segmentation(_img, template=[lower_bounds, upper_bounds], visualize=True)
+	lf_color_segmentation(_img, visualize=True)
