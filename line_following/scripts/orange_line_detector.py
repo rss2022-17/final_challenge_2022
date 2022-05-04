@@ -44,6 +44,8 @@ class OrangeLineDetector():
         self.image_sub = rospy.Subscriber(self.image_topic, Image, self.image_callback)
         self.bridge = CvBridge() # Converts between ROS images and OpenCV Images
 
+        self.trajectory.addPoint(Point32(0,0,0))
+
     def image_callback(self, image_msg):
         # Apply your imported color segmentation function (cd_color_segmentation) to the image msg here
         # From your bounding box, take the center pixel on the bottom
@@ -61,7 +63,7 @@ class OrangeLineDetector():
         # If the state machine hasn't activated, skip over the callback
         if not self.active_state: return
 
-        self.trajectory.clear()
+        # self.trajectory.clear()
         image = self.bridge.imgmsg_to_cv2(image_msg, "bgr8")
 
         lower_bound = (5, 190, 100)
@@ -73,6 +75,8 @@ class OrangeLineDetector():
         debug_img = image.copy()
         
         if trajectory_pixels is not None:
+            # only reset the trajectory if we have a new one
+            self.trajectory.clear()
             for point_pixels in trajectory_pixels:
                 (x, y) = self.homography.transformUvToXy(*point_pixels)
 
@@ -80,6 +84,7 @@ class OrangeLineDetector():
 
                 new_point = Point32(x, y, 0)
                 self.trajectory.addPoint(new_point)
+
 
         self.traj_pub.publish(self.trajectory.toPoseArray())
         self.trajectory.publish_viz()
