@@ -19,8 +19,8 @@ def color2grayscale(image):
     gray_im = np.array(cv2.cvtColor(image, cv2.COLOR_RGB2GRAY))
     white_im = 255*(gray_im > 170)
 
-    image_path = r'C:\Users\shrey\OneDrive\Desktop\white_image.png'
-    cv2.imwrite(image_path,np.uint8(white_im))
+    # image_path = r'C:\Users\shrey\OneDrive\Desktop\white_image.png'
+    # cv2.imwrite(image_path,np.uint8(white_im))
 
     return np.uint8(white_im)
 
@@ -296,7 +296,7 @@ def main():
         trajectory_image = image.copy()
 
         trajectory_points = get_trajectory(image)
-        print(trajectory_points)
+        # print(trajectory_points)
 
         for point in trajectory_points[0]:
                 trajectory_image = cv2.circle(trajectory_image,point,radius=1,color=(0,0,255),thickness=-1)
@@ -305,7 +305,7 @@ def main():
 
         image_path = r'C:\Users\shrey\OneDrive\Desktop\aaa'+str(i)+'.png'
 
-        cv2.imwrite(image_path,trajectory_image)
+        # cv2.imwrite(image_path,trajectory_image)
 
 
         # cv2.imwrite('blur.png',blur)
