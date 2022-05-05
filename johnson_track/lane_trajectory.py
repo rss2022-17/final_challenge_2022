@@ -68,6 +68,7 @@ class LaneTrajectory():
             trajectory_left = trajectory_sides[0]
             trajectory_right = trajectory_sides[1]
             #print(trajectory_sides)
+            print(len(trajectory_left)) 
             for i in range(len(trajectory_left)):
                 # print("Trajectory left shape is : ", trajectory_left.shape)
                 left_x, left_y = trajectory_left[i]
@@ -95,7 +96,7 @@ class LaneTrajectory():
         else:
              self.trajectory.addPoint(Point32(0,0,0))
 
-        # self.traj_pub.publish(self.trajectory.toPoseArray())
+        self.traj_pub.publish(self.trajectory.toPoseArray())
         # self.trajectory.publish_viz()
         #print("in image callback2!")
 

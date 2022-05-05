@@ -329,10 +329,26 @@ def lf_color_segmentation(img, template=None, pct=0.6, similarity_margin=0.2, ho
 		# are we making a 90 degree turn?
 		if max_blue_dist_from_horizontal <= horizontal_angle_margin:
 			# yes, get the self intersections on the horizontal track and determine the point mass
-			second_self_intersections = np.array(segmented_intersections([segmented[1], segmented[1]], mask.shape))
-			point_mass = np.rint(np.average(second_self_intersections, axis=0)).astype(np.int32)
+			second_self_intersections = segmented_intersections([segmented[1], segmented[1]], mask.shape)
+
+			use_points = list()
+			for pt in second_self_intersections:
+				if mask[pt[0][1], pt[0][0]] > 200:
+					use_points.append(pt)
+					
+
+			use_points = np.array(use_points)
+
+			if use_points.size == 0: return None
+
+			point_mass = np.rint(np.average(use_points, axis=0)).astype(np.int32)
 
 			x_of_point_mass = point_mass[0, 0]
+
+			if visualize:
+				cv2.circle(img, tuple(point_mass[0].tolist()), 5, (255, 255, 255), 1)
+				image_print(img, "Hard turn")
+
 
 			# is the point mass on the left?
 			if x_of_point_mass < img_shape[0] / 2:
@@ -459,7 +475,7 @@ def lf_color_segmentation(img, template=None, pct=0.6, similarity_margin=0.2, ho
 
 
 if __name__ == '__main__':
-	_img = cv2.imread("./test_images_track/failure.png")
+	_img = cv2.imread("./test_images_track/anger.png")
 
 	# orange mask
 	lower_bounds = (10, 10, 120)
@@ -471,4 +487,4 @@ if __name__ == '__main__':
 	# upper_bounds = (50,255, 110)
 
 	# lf_color_segmentation(_img, template=[lower_bounds, upper_bounds], visualize=True)
-	lf_color_segmentation(_img, visualize=True)
+	lf_color_segmentation(_img, visualize=True, horizontal_angle_margin=20*np.pi/180)
