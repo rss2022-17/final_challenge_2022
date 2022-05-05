@@ -236,7 +236,8 @@ def hough_section(image, top_bound, bottom_bound, pinch, base_threshold, midline
 def get_trajectory(image):
 
     #Blur image to reduce noise
-    blur = gaussian_blur(color2grayscale(image))
+    #blur = gaussian_blur(color2grayscale(image))
+    blur = color2grayscale(image)
 
     #Gets edges from image 
     canny_edge_image = canny_edges(blur)
@@ -286,7 +287,7 @@ def get_trajectory(image):
     #     all_right_points.extend(right_points)
 
     # ------------------- INTERSECTION -------------------
-    closest_line_left, closest_line_right = hough_section(canny_edge_image,0.4,0.7, 0.7, 150, image.shape[1] / 2.0, image.copy())   
+    closest_line_left, closest_line_right = hough_section(canny_edge_image,0.43,1, 0.6, 150, image.shape[1] / 2.0, image.copy())   
     if closest_line_left is None or closest_line_right is None: 
         return [all_left_points, all_right_points] #np.array([0, 0])
 
@@ -295,8 +296,8 @@ def get_trajectory(image):
     all_left_points.append(point)
     all_right_points.append(point)
 
-    bottom_weight = 0.6
-    intersection_weight = 0.4
+    bottom_weight = 0
+    intersection_weight = 1
     traj_point = [int(bottom_point[0]*bottom_weight+point[0]*intersection_weight), int(bottom_point[1]*bottom_weight+point[1]*intersection_weight)]
 
     all_left_points.append(traj_point)

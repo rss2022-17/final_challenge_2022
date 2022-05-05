@@ -38,6 +38,7 @@ class LaneTrajectory():
         self.debug_pub = rospy.Publisher("/traj_debug_img", Image, queue_size=10)
         self.image_sub = rospy.Subscriber(self.image_topic, Image, self.image_callback)
         self.bridge = CvBridge() # Converts between ROS images and OpenCV Images
+        self.prev_traj = Point32(0,0,0)
 
     def image_callback(self, image_msg):
         # Apply your imported color segmentation function (cd_color_segmentation) to the image msg here
@@ -85,6 +86,7 @@ class LaneTrajectory():
                 debug_img = cv2.circle(debug_img, (x_avg_img, y_avg_img), 5, (255, 255, 0), 1)
 
                 new_point = Point32(x_avg, y_avg, 0)
+                self.prev_traj = new_point
                 self.trajectory.addPoint(new_point)
         # if trajectory_sides is not None:
         #     x, y = self.homography.transformUvToXy(trajectory_sides[0], trajectory_sides[1])
@@ -94,7 +96,7 @@ class LaneTrajectory():
         #     self.trajectory.addPoint(point)
         #     debug_img = trajectory_sides[2]
         else:
-             self.trajectory.addPoint(Point32(0,0,0))
+             self.trajectory.addPoint(self.prev_traj)
 
         self.traj_pub.publish(self.trajectory.toPoseArray())
         # self.trajectory.publish_viz()
