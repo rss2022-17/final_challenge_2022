@@ -267,8 +267,8 @@ def get_trajectory(image):
     bottom_point_right = right_points[0]
 
     bottom_point = [(bottom_point_left[0]+bottom_point_right[0])*.5, (bottom_point_left[1]+bottom_point_right[1])*.5]
-    all_left_points.extend(left_points)
-    all_right_points.extend(right_points)
+    #all_left_points.extend(left_points)
+    #all_right_points.extend(right_points)
 
     #new_midline = (all_left_points[-1][0] + all_right_points[-1][0])/2.0
 
@@ -293,8 +293,8 @@ def get_trajectory(image):
 
     point = intersection_generalized(closest_line_left, closest_line_right)
 
-    all_left_points.append(point)
-    all_right_points.append(point)
+    #all_left_points.append(point)
+    #all_right_points.append(point)
 
     bottom_weight = 0
     intersection_weight = 1

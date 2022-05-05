@@ -85,7 +85,8 @@ class LaneTrajectory():
                 y_avg_img = np.rint((left_y+right_y)/2.0).astype(np.uint16)
                 debug_img = cv2.circle(debug_img, (x_avg_img, y_avg_img), 5, (255, 255, 0), 1)
 
-                new_point = Point32(x_avg, y_avg, 0)
+                lookahead = 6
+                new_point = Point32(lookahead, y_avg, 0)
                 self.prev_traj = new_point
                 self.trajectory.addPoint(new_point)
         # if trajectory_sides is not None:
