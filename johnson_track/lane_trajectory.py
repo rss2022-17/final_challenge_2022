@@ -58,31 +58,37 @@ class LaneTrajectory():
         #print(image.shape[:2])
         image_y, image_x = image.shape[:2]
 
-        trajectory_sides = get_trajectory(image)
+        trajectory_sides = get_trajectory2(image)
 
-        debug_img = image.copy()
+        #debug_img = image.copy()
         
-        if trajectory_sides is not None: # todo: add something in lane_detection that allows this to be none
-            trajectory_left = trajectory_sides[0]
-            trajectory_right = trajectory_sides[1]
-            #print(trajectory_sides)
-            for i in range(len(trajectory_left)):
-                # print("Trajectory left shape is : ", trajectory_left.shape)
-                left_x, left_y = trajectory_left[i]
-                right_x, right_y = trajectory_right[i]
+        # If we get a trajectory, then use it for point logic, otherwise publish a point that is directly infront of (or on)
+        # the robot
+        # if trajectory_sides is not None: 
+        #     trajectory_left = trajectory_sides[0]
+        #     trajectory_right = trajectory_sides[1]
+        #     print(trajectory_sides)
+        #     for i in range(len(trajectory_left)):
+        #         # print("Trajectory left shape is : ", trajectory_left.shape)
+        #         left_x, left_y = trajectory_left[i]
+        #         right_x, right_y = trajectory_right[i]
 
-                left_x_hom, left_y_hom = self.homography.transformUvToXy(left_x,left_y)
-                right_x_hom, right_y_hom = self.homography.transformUvToXy(right_x,right_y)
+        #         left_x_hom, left_y_hom = self.homography.transformUvToXy(left_x,left_y)
+        #         right_x_hom, right_y_hom = self.homography.transformUvToXy(right_x,right_y)
 
-                x_avg = (left_x_hom+right_x_hom)/2.0
-                y_avg = (left_y_hom+right_y_hom)/2.0
+        #         x_avg = (left_x_hom+right_x_hom)/2.0
+        #         y_avg = (left_y_hom+right_y_hom)/2.0
 
-                x_avg_img = np.rint((left_x+right_x)/2.0).astype(np.uint16)
-                y_avg_img = np.rint((left_y+right_y)/2.0).astype(np.uint16)
-                debug_img = cv2.circle(debug_img, (x_avg_img, y_avg_img), 5, (255, 255, 0), 1)
+        #         x_avg_img = np.rint((left_x+right_x)/2.0).astype(np.uint16)
+        #         y_avg_img = np.rint((left_y+right_y)/2.0).astype(np.uint16)
+        #         debug_img = cv2.circle(debug_img, (x_avg_img, y_avg_img), 5, (255, 255, 0), 1)
 
-                new_point = Point32(x_avg, y_avg, 0)
-                self.trajectory.addPoint(new_point)
+        #         new_point = Point32(x_avg, y_avg, 0)
+        #         self.trajectory.addPoint(new_point)
+        if trajectory_sides is not None:
+            x, y = self.homography.transformUvToXy(trajectory_sides[0], trajectory_sides[1])
+            point = Point32(x, y, 0)
+            self.trajectory.addPoint(point)
         else:
             self.trajectory.addPoint(Point32(0,0,0))
 
@@ -90,8 +96,8 @@ class LaneTrajectory():
         self.trajectory.publish_viz()
         #print("in image callback2!")
 
-        cv2.imwrite("debug.png", debug_img)
-        if (self.debug_pub.get_num_connections() > 0): self.debug_pub.publish(self.bridge.cv2_to_imgmsg(debug_img, "bgr8"))
+        # cv2.imwrite("debug.png", debug_img)
+        # if (self.debug_pub.get_num_connections() > 0): self.debug_pub.publish(self.bridge.cv2_to_imgmsg(debug_img, "bgr8"))
 
 
 
