@@ -91,7 +91,7 @@ class LaneTrajectory():
             y_img = np.rint((trajectory_sides[1])).astype(np.uint16)
             point = Point32(x, y, 0)
             self.trajectory.addPoint(point)
-            debug_img = cv2.circle(debug_img, (x_img, y_img), 5, (255, 255, 0), 1)
+            debug_img = trajectory_sides[2]
         else:
             self.trajectory.addPoint(Point32(0,0,0))
 

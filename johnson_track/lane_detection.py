@@ -292,6 +292,7 @@ def get_trajectory(image):
     # note: can have neg values!!!
 
 def get_trajectory2(image):
+    debug_pub = rospy.Publisher("/hough_debug", Image, queue_size=10)
 
     src = image
     #Blur image to reduce noise
@@ -336,7 +337,7 @@ def get_trajectory2(image):
             cv2.line(cdst2, pt1, pt2, (0,0,255), 3, cv2.LINE_AA)
 
 
-    linesP = cv2.HoughLinesP(cropped, 1, np.pi / 180, 50, None, 150, 20)
+    linesP = cv2.HoughLinesP(cropped, 1, np.pi / 180, 50, None, 150, 10)
     
     x_list = []
     y_list = []
@@ -354,7 +355,9 @@ def get_trajectory2(image):
     ymean = int(np.mean(y_list))
     point = (xmean, ymean)
 
-    return [xmean, ymean]
+
+
+    return [xmean, ymean, cdstP]
     cv2.circle(src,point,radius=5,color=(0,255,0),thickness=-1)
     cv2.imshow("Source", src)
     cv2.imshow("Detected Lines (in red) - Probabilistic Line Transform", cdstP)
