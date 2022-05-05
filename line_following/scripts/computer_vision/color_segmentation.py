@@ -138,7 +138,7 @@ def segment_angle_kmeans(lines, k=2, **kwargs):
 	segmented = list(segmented.values())
 	return segmented
 
-def intersection(line1, line2):
+def intersection(line1, line2, image_shape=None):
 	# https://stackoverflow.com/questions/46565975/find-intersection-point-of-two-lines-drawn-using-houghlines-opencv
     """Finds the intersection of two lines given in Hesse normal form.
 
@@ -160,23 +160,25 @@ def intersection(line1, line2):
     return [[x0, y0]]
 
 
-def segmented_intersections(lines):
+def segmented_intersections(lines, image_shape=None):
 	# https://stackoverflow.com/questions/46565975/find-intersection-point-of-two-lines-drawn-using-houghlines-opencv
-    """Finds the intersections between groups of lines."""
-
-    intersections = []
-    for i, group in enumerate(lines[:-1]):
-        for next_group in lines[i+1:]:
-            for line1 in group:
-                for line2 in next_group:
-                    intersections.append(intersection(line1, line2)) 
-
-    return intersections
-
-def self_intersections(lines):
+	# """Finds the intersections between groups of lines."""
 
 	intersections = []
+	for i, group in enumerate(lines[:-1]):
+		for next_group in lines[i+1:]:
+			for line1 in group:
+				for line2 in next_group:
+					found_intersection = intersection(line1, line2)
 
+					if image_shape is not None:
+						_x, _y = found_intersection[0]
+
+						if 0 <= _x < image_shape[1] and 0 <= _y < image_shape[0]:
+							intersections.append(found_intersection)
+					else:
+						intersections.append(found_intersection)
+	return intersections
 
 
 def lf_color_segmentation(img, template=None, pct=0.6, similarity_margin=0.2, horizontal_angle_margin=5*np.pi/180, visualize=False): #pct specifies which portion of the image to look in
@@ -221,6 +223,8 @@ def lf_color_segmentation(img, template=None, pct=0.6, similarity_margin=0.2, ho
 	hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) #converts bgr to hsv
 	img_shape = hsv_img.shape
 
+	if visualize: print("Image shape: "+str(img_shape))
+
 	start_x = int(np.floor(img_shape[0]*(1-1)))
 	hsv_img_cropped = hsv_img[start_x:,:]
 	mask = cv2.inRange(hsv_img_cropped, lower_bounds, upper_bounds) #creates binary image with 1 = within bounds given
@@ -229,13 +233,15 @@ def lf_color_segmentation(img, template=None, pct=0.6, similarity_margin=0.2, ho
 	mask = cv2.dilate(erosion_dst, element, iterations=1) #increases mask area
 
 	if visualize: image_print(mask, "mask")
-	if visualize: print(mask.shape)
+	if visualize: print("First mask shape: "+str(mask.shape))
 
 	### Now that we have a mask, do line detection
 	canny_img = cv2.Canny(mask, 100, 200)
         
 	big_element = np.ones((21, 21), np.uint8) #kernel for erosion/dilation
 	mask = cv2.dilate(erosion_dst, big_element, iterations=1) #increases mask area
+
+	if visualize: print("Second mask shape: "+str(mask.shape))
 
 	# HoughLines(img, rho, theta, threshold, lines,)
 	lines = cv2.HoughLines(canny_img, 1, np.pi/180, 60, None, 0, 0)
@@ -304,10 +310,9 @@ def lf_color_segmentation(img, template=None, pct=0.6, similarity_margin=0.2, ho
 
 		# first two line groupings are theoretically the lines we care about
 		# the third line group should be the horizontal group
-		main_intersections = np.array(segmented_intersections(segmented[:2])) # intersect first two
-		lower_intersections = np.array(segmented_intersections([segmented[0], segmented[2]])) # intersect first with horizontal
-		upper_intersections = np.array(segmented_intersections(segmented[1:])) # intersect second with horizontal
-
+		main_intersections = np.array(segmented_intersections(segmented[:2], mask.shape)) # intersect first two
+		lower_intersections = np.array(segmented_intersections([segmented[0], segmented[2]], mask.shape)) # intersect first with horizontal
+		upper_intersections = np.array(segmented_intersections(segmented[1:], mask.shape)) # intersect second with horizontal
 
 		# average point of the two main classes intersecting, used to tell us where to switch line classes
 		average_point = np.rint(np.average(main_intersections, axis=0)).astype(np.int32)
@@ -321,11 +326,10 @@ def lf_color_segmentation(img, template=None, pct=0.6, similarity_margin=0.2, ho
 		# draw them (but not anymore)
 		# for idx, pt in enumerate(lower_intersections_to_use): cv2.circle(img, tuple(pt), 5, (0, 255, 255), 1)
 
-
 		# are we making a 90 degree turn?
 		if max_blue_dist_from_horizontal <= horizontal_angle_margin:
 			# yes, get the self intersections on the horizontal track and determine the point mass
-			second_self_intersections = np.array(segmented_intersections([segmented[1], segmented[1]]))
+			second_self_intersections = np.array(segmented_intersections([segmented[1], segmented[1]], mask.shape))
 			point_mass = np.rint(np.average(second_self_intersections, axis=0)).astype(np.int32)
 
 			x_of_point_mass = point_mass[0, 0]
@@ -389,8 +393,13 @@ def lf_color_segmentation(img, template=None, pct=0.6, similarity_margin=0.2, ho
 				lower_filter = lower_intersections_to_use[:,1] == yval
 				upper_filter = upper_intersections_to_use[:,1] == yval
 
-				new_point_lower = np.average(lower_intersections_to_use[lower_filter,:], axis=0).astype(np.int32)
-				new_point_upper = np.average(upper_intersections_to_use[upper_filter,:], axis=0).astype(np.int32)
+				to_avg_lower = lower_intersections_to_use[lower_filter,:]
+				to_avg_upper = upper_intersections_to_use[upper_filter,:]
+
+				if to_avg_lower.size == 0: continue
+
+				new_point_lower = np.average(to_avg_lower, axis=0).astype(np.int32)
+				new_point_upper = np.average(to_avg_upper, axis=0).astype(np.int32)
 
 				if detected_single_lane:
 					# we see a single lane so average all the points together
@@ -398,16 +407,16 @@ def lf_color_segmentation(img, template=None, pct=0.6, similarity_margin=0.2, ho
 					new_point = np.average(np.array([new_point_lower, new_point_upper]), axis=0).astype(np.int32)
 
 					# are the points in the orange mask?
-					if (mask[new_point[1]-1, new_point[0]-1] > 200):
+					if (mask[new_point[1], new_point[0]] > 200):
 						points_in_trajectory.append(tuple(new_point.tolist()))
 
 				else: # the two classes of lines are separate lines
 					# are the new points in the orange mask?
-					if (mask[new_point_lower[1]-1, new_point_lower[0]-1] > 200): 
+					if (mask[new_point_lower[1], new_point_lower[0]] > 200): 
 						# yes, add it to trajectory
 						points_in_first_traj.append(tuple(new_point_lower.tolist()))
 
-					if (mask[new_point_upper[1]-1, new_point_upper[0]-1] > 200): 
+					if (mask[new_point_upper[1], new_point_upper[0]] > 200): 
 						# yes, add it to trajectory
 						if yval > yboundary: # is the less steep class below the average intersection?
 							num_second_class_is_below += 1
