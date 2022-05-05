@@ -99,11 +99,11 @@ class OrangeLineDetector():
             self.last_turn_left = None
             for point_pixels in trajectory_pixels:
                 (x, y) = self.homography.transformUvToXy(*point_pixels)
-
-		try:
-                	debug_img = cv2.circle(debug_img, point_pixels, 5, (255, 255, 0), 1)
-		except Exception:
-			pass
+                
+                try:
+                    debug_img = cv2.circle(debug_img, point_pixels, 5, (255, 255, 0), 1)
+                except Exception:
+                    pass
 
                 new_point = Point32(x, y, 0)
                 self.trajectory.addPoint(new_point)
