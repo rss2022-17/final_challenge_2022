@@ -18,7 +18,7 @@ from visual_servoing.msg import ConeLocationPixel # custom message
 from homography_transformer import HomographyTransformer
 
 # import your color segmentation algorithm; call this function in ros_image_callback!
-from computer_vision.color_segmentation2 import cd_color_segmentation, lf_color_segmentation
+from computer_vision.color_segmentation2 import lf_color_segmentation
 
 class OrangeLineDetector2():
     """

@@ -4,7 +4,6 @@ import rospy
 import numpy as np
 import math
 
-from visual_servoing.msg import ConeLocation, ParkingError
 from ackermann_msgs.msg import AckermannDriveStamped
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import Point32
