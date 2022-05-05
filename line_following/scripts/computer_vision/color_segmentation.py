@@ -226,6 +226,9 @@ def lf_color_segmentation(img, template=None, pct=0.6, horizontal_angle_margin=2
 
 	### Now that we have a mask, do line detection
 	canny_img = cv2.Canny(mask, 100, 200)
+        
+	big_element = np.ones((21, 21), np.uint8) #kernel for erosion/dilation
+	mask = cv2.dilate(erosion_dst, big_element, iterations=1) #increases mask area
 
 	# HoughLines(img, rho, theta, threshold, lines,)
 	lines = cv2.HoughLines(canny_img, 1, np.pi/180, 60, None, 0, 0)

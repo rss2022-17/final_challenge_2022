@@ -76,7 +76,7 @@ class OrangeLineDetector():
         upper_bound = (40, 255, 255)
         template = [lower_bound, upper_bound]
 
-        trajectory_pixels = lf_color_segmentation(image, template, pct=0.4, visualize=False)
+        trajectory_pixels = lf_color_segmentation(image, template, pct=0.5, visualize=False)
 
         debug_img = image.copy()
 
@@ -90,8 +90,9 @@ class OrangeLineDetector():
             self.turn_left_pub.publish(Bool(trajectory_pixels))
 
             self.last_turn_left = trajectory_pixels
-            rospy.sleep(0.25)
+            #rospy.sleep(0.25)
 
+        
         elif trajectory_pixels is not None and len(trajectory_pixels) > 2:
             # only reset the trajectory if we have a new one
             self.trajectory.clear()
