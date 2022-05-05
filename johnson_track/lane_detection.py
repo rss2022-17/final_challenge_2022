@@ -255,52 +255,47 @@ def get_trajectory(image):
     all_right_points = []
     
     # ------------------- BOTTOM -------------------
-    closest_line_left, closest_line_right = hough_section(canny_edge_image,0.45,1.0, 0.6, 150, image.shape[1] / 2.0, image.copy())
-    rospy.logwarn("hello!!!")
-    rospy.logwarn(closest_line_left)
-    rospy.logwarn(closest_line_right)
-
-
-    # trajectory_image = line_visualizer(trajectory_image, np.array([closest_line_left,closest_line_right]),(255,0,0))
-    # image_path = r'C:\Users\shrey\OneDrive\Desktop\aaa.png'
-    # cv2.imwrite(image_path,trajectory_image)
+    closest_line_left, closest_line_right = hough_section(canny_edge_image,0.6,0.8, 0.7, 150, image.shape[1] / 2.0, image.copy())
 
     if closest_line_left is None or closest_line_right is None: return None #np.array([0, 0])
 
-    # steps = [.9,.8,.7, .65, .6, .55, .5]
-    # steps = [.9,.8,.7,.6,.5]
     steps = [.4]
     left_points,right_points = trajectory_rails(image, closest_line_left,closest_line_right,steps)
+
+    bottom_point_left = all_left_points[0]
+    bottom_point_right = all_right_points[0]
+
+    bottom_point = [(bottom_point_left[0]+bottom_point_right[0])*.5, (bottom_point_left[1]+bottom_point_right[1])*.5]
     all_left_points.extend(left_points)
     all_right_points.extend(right_points)
 
     #new_midline = (all_left_points[-1][0] + all_right_points[-1][0])/2.0
 
     # ------------------- TOP -------------------
-    closest_line_left, closest_line_right = hough_section(canny_edge_image,0.4,0.5, 0.48, 150, image.shape[1] / 2.0, image.copy())   
-    if closest_line_left is None or closest_line_right is None: 
-        return [all_left_points, all_right_points] #np.array([0, 0])
+    # closest_line_left, closest_line_right = hough_section(canny_edge_image,0.4,0.5, 0.48, 150, image.shape[1] / 2.0, image.copy())   
+    # if closest_line_left is None or closest_line_right is None: 
+    #     return [all_left_points, all_right_points] #np.array([0, 0])
 
 
-    # steps = [.49,.48,.47,.46,.45]
-    # steps = [.47,.45]
-    steps = [.43]
-    left_points,right_points = trajectory_rails(image, closest_line_left,closest_line_right,steps)
-    if (np.abs(all_left_points[-1][0] - left_points[0][0]) < 100) and (np.abs(all_right_points[-1][0] - right_points[0][0]) < 100):
-        all_left_points.extend(left_points)
-        all_right_points.extend(right_points)
+    # # steps = [.49,.48,.47,.46,.45]
+    # # steps = [.47,.45]
+    # steps = [.43]
+    # left_points,right_points = trajectory_rails(image, closest_line_left,closest_line_right,steps)
+    # if (np.abs(all_left_points[-1][0] - left_points[0][0]) < 100) and (np.abs(all_right_points[-1][0] - right_points[0][0]) < 100):
+    #     all_left_points.extend(left_points)
+    #     all_right_points.extend(right_points)
 
     # ------------------- INTERSECTION -------------------
-    closest_line_left, closest_line_right = hough_section(canny_edge_image,0.45,1.0, 0.6, 150, image.shape[1] / 2.0, image.copy())   
+    closest_line_left, closest_line_right = hough_section(canny_edge_image,0.6,0.8, 0.7, 150, image.shape[1] / 2.0, image.copy())   
     if closest_line_left is None or closest_line_right is None: 
         return [all_left_points, all_right_points] #np.array([0, 0])
 
     point = intersection_generalized(closest_line_left, closest_line_right)
 
-    y_val = 3 # TODO: CHANGE THIS!!!! param :))
+    traj_point = [(bottom_point[0]+point[0])*.5, (bottom_point[1]+point[1])*.5]
 
-    all_left_points.extend([point[0], y_val])
-    all_right_points.extend([point[0], y_val])
+    all_left_points.append(traj_point)
+    all_right_points.append(traj_point)
 
     # new_midline = (all_left_points[-1][0] + all_right_points[-1][0])/2.0
 
