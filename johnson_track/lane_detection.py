@@ -3,8 +3,12 @@
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
+<<<<<<< HEAD
 # import rospy
 # from sensor_msgs.msg import Image
+=======
+
+>>>>>>> parent of 3b1bd6e... modified lane_detection
 HORIZON = 0.4
 
 def color2grayscale(image):
