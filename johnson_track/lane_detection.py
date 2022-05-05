@@ -293,8 +293,10 @@ def get_trajectory(image):
 
     point = intersection_generalized(closest_line_left, closest_line_right)
 
-    all_left_points.extend(point)
-    all_right_points.extend(point)
+    y_val = 3 # TODO: CHANGE THIS!!!! param :))
+
+    all_left_points.extend([point[0], y_val])
+    all_right_points.extend([point[0], y_val])
 
     # new_midline = (all_left_points[-1][0] + all_right_points[-1][0])/2.0
 
