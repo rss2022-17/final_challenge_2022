@@ -16,7 +16,7 @@ from visual_servoing.msg import ConeLocationPixel # custom message
 from homography_transformer import HomographyTransformer
 
 # import your color segmentation algorithm; call this function in ros_image_callback!
-from lane_detection import get_trajectory2
+from lane_detection import get_trajectory
 
 class LaneTrajectory():
     """
@@ -58,45 +58,45 @@ class LaneTrajectory():
         #print(image.shape[:2])
         image_y, image_x = image.shape[:2]
 
-        trajectory_sides = get_trajectory2(image)
+        trajectory_sides = get_trajectory(image)
 
         debug_img = image.copy()
         
-        # If we get a trajectory, then use it for point logic, otherwise publish a point that is directly infront of (or on)
-        # the robot
-        # if trajectory_sides is not None: 
-        #     trajectory_left = trajectory_sides[0]
-        #     trajectory_right = trajectory_sides[1]
-        #     print(trajectory_sides)
-        #     for i in range(len(trajectory_left)):
-        #         # print("Trajectory left shape is : ", trajectory_left.shape)
-        #         left_x, left_y = trajectory_left[i]
-        #         right_x, right_y = trajectory_right[i]
+        #If we get a trajectory, then use it for point logic, otherwise publish a point that is directly infront of (or on)
+        #the robot
+        if trajectory_sides is not None: 
+            trajectory_left = trajectory_sides[0]
+            trajectory_right = trajectory_sides[1]
+            #print(trajectory_sides)
+            for i in range(len(trajectory_left)):
+                # print("Trajectory left shape is : ", trajectory_left.shape)
+                left_x, left_y = trajectory_left[i]
+                right_x, right_y = trajectory_right[i]
 
-        #         left_x_hom, left_y_hom = self.homography.transformUvToXy(left_x,left_y)
-        #         right_x_hom, right_y_hom = self.homography.transformUvToXy(right_x,right_y)
+                left_x_hom, left_y_hom = self.homography.transformUvToXy(left_x,left_y)
+                right_x_hom, right_y_hom = self.homography.transformUvToXy(right_x,right_y)
 
-        #         x_avg = (left_x_hom+right_x_hom)/2.0
-        #         y_avg = (left_y_hom+right_y_hom)/2.0
+                x_avg = (left_x_hom+right_x_hom)/2.0
+                y_avg = (left_y_hom+right_y_hom)/2.0
 
-        #         x_avg_img = np.rint((left_x+right_x)/2.0).astype(np.uint16)
-        #         y_avg_img = np.rint((left_y+right_y)/2.0).astype(np.uint16)
-        #         debug_img = cv2.circle(debug_img, (x_avg_img, y_avg_img), 5, (255, 255, 0), 1)
+                x_avg_img = np.rint((left_x+right_x)/2.0).astype(np.uint16)
+                y_avg_img = np.rint((left_y+right_y)/2.0).astype(np.uint16)
+                debug_img = cv2.circle(debug_img, (x_avg_img, y_avg_img), 5, (255, 255, 0), 1)
 
-        #         new_point = Point32(x_avg, y_avg, 0)
-        #         self.trajectory.addPoint(new_point)
-        if trajectory_sides is not None:
-            x, y = self.homography.transformUvToXy(trajectory_sides[0], trajectory_sides[1])
-            x_img = np.rint((trajectory_sides[0])).astype(np.uint16)
-            y_img = np.rint((trajectory_sides[1])).astype(np.uint16)
-            point = Point32(x, y, 0)
-            self.trajectory.addPoint(point)
-            debug_img = trajectory_sides[2]
+                new_point = Point32(x_avg, y_avg, 0)
+                self.trajectory.addPoint(new_point)
+        # if trajectory_sides is not None:
+        #     x, y = self.homography.transformUvToXy(trajectory_sides[0], trajectory_sides[1])
+        #     x_img = np.rint((trajectory_sides[0])).astype(np.uint16)
+        #     y_img = np.rint((trajectory_sides[1])).astype(np.uint16)
+        #     point = Point32(x, y, 0)
+        #     self.trajectory.addPoint(point)
+        #     debug_img = trajectory_sides[2]
         else:
-            self.trajectory.addPoint(Point32(0,0,0))
+             self.trajectory.addPoint(Point32(0,0,0))
 
-        self.traj_pub.publish(self.trajectory.toPoseArray())
-        self.trajectory.publish_viz()
+        # self.traj_pub.publish(self.trajectory.toPoseArray())
+        # self.trajectory.publish_viz()
         #print("in image callback2!")
 
         # cv2.imwrite("debug.png", debug_img)
