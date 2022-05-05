@@ -26,8 +26,8 @@ def color2grayscale(image):
     return np.uint8(white_im)
 
 def gaussian_blur(image):
-    x_kernel = 23
-    y_kernel = 23
+    x_kernel = 19  
+    y_kernel = 19 
     return cv2.GaussianBlur(image,(x_kernel, y_kernel),0)
 
 def canny_edges(image):
@@ -242,6 +242,10 @@ def get_trajectory(image):
     
     # ------------------- BOTTOM -------------------
     closest_line_left, closest_line_right = hough_section(canny_edge_image,0.45,1.0, 0.6, 150, image.shape[1] / 2.0, image.copy())
+    rospy.logwarn("hello!!!")
+    rospy.logwarn(closest_line_left)
+    rospy.logwarn(closest_line_right)
+
 
     # trajectory_image = line_visualizer(trajectory_image, np.array([closest_line_left,closest_line_right]),(255,0,0))
     # image_path = r'C:\Users\shrey\OneDrive\Desktop\aaa.png'
@@ -251,7 +255,7 @@ def get_trajectory(image):
 
     # steps = [.9,.8,.7, .65, .6, .55, .5]
     # steps = [.9,.8,.7,.6,.5]
-    steps = [.45]
+    steps = [.4]
     left_points,right_points = trajectory_rails(image, closest_line_left,closest_line_right,steps)
     all_left_points.extend(left_points)
     all_right_points.extend(right_points)
@@ -259,7 +263,7 @@ def get_trajectory(image):
     #new_midline = (all_left_points[-1][0] + all_right_points[-1][0])/2.0
 
     # ------------------- TOP -------------------
-    closest_line_left, closest_line_right = hough_section(canny_edge_image,0.45,0.5, 0.48, 150, image.shape[1] / 2.0, image.copy())   
+    closest_line_left, closest_line_right = hough_section(canny_edge_image,0.4,0.5, 0.48, 150, image.shape[1] / 2.0, image.copy())   
     if closest_line_left is None or closest_line_right is None: 
         return [all_left_points, all_right_points] #np.array([0, 0])
 
