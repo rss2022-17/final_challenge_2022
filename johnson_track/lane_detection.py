@@ -85,6 +85,20 @@ def intersection(image, line1, y_placement):
 
     return [x0, y0]
 
+def intersection_generalized(line1, line2):
+    # https://stackoverflow.com/questions/46565975/find-intersection-point-of-two-lines-drawn-using-houghlines-opencv
+    rho1, theta1 = line1[0]
+    rho2, theta2 = line2[0] # horizontal
+    A = np.array([
+        [np.cos(theta1), np.sin(theta1)],
+        [np.cos(theta2), np.sin(theta2)]
+    ])
+    b = np.array([[rho1], [rho2]])
+    x0, y0 = np.linalg.solve(A, b)
+    x0, y0 = int(np.round(x0)), int(np.round(y0))
+
+    return [x0, y0]
+
 def hough(image,og_image,horizontal_perc):
     threshold = 150
     lines_pos_slope = cv2.HoughLines(image,1, np.pi/180.0,threshold,srn=0,stn=0,min_theta=0,max_theta=np.pi*0.4)
@@ -275,7 +289,16 @@ def get_trajectory(image):
     if (np.abs(all_left_points[-1][0] - left_points[0][0]) < 100) and (np.abs(all_right_points[-1][0] - right_points[0][0]) < 100):
         all_left_points.extend(left_points)
         all_right_points.extend(right_points)
- 
+
+    # ------------------- INTERSECTION -------------------
+    closest_line_left, closest_line_right = hough_section(canny_edge_image,0.45,1.0, 0.6, 150, image.shape[1] / 2.0, image.copy())   
+    if closest_line_left is None or closest_line_right is None: 
+        return [all_left_points, all_right_points] #np.array([0, 0])
+
+    point = intersection_generalized(closest_line_left, closest_line_right)
+
+    all_left_points.extend(point)
+    all_right_points.extend(point)
 
     # new_midline = (all_left_points[-1][0] + all_right_points[-1][0])/2.0
 
