@@ -3,8 +3,8 @@
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
-import rospy
-from sensor_msgs.msg import Image
+# import rospy
+# from sensor_msgs.msg import Image
 HORIZON = 0.4
 
 def color2grayscale(image):
@@ -26,8 +26,8 @@ def color2grayscale(image):
     return np.uint8(white_im)
 
 def gaussian_blur(image):
-    x_kernel = 19  
-    y_kernel = 19 
+    x_kernel = 7  
+    y_kernel = 7
     return cv2.GaussianBlur(image,(x_kernel, y_kernel),0)
 
 def canny_edges(image):
@@ -255,15 +255,15 @@ def get_trajectory(image):
     all_right_points = []
     
     # ------------------- BOTTOM -------------------
-    closest_line_left, closest_line_right = hough_section(canny_edge_image,0.6,0.8, 0.7, 150, image.shape[1] / 2.0, image.copy())
+    closest_line_left, closest_line_right = hough_section(canny_edge_image,0.4,.5, 0.48, 150, image.shape[1] / 2.0, image.copy())
 
     if closest_line_left is None or closest_line_right is None: return None #np.array([0, 0])
 
-    steps = [.4]
+    steps = [.43]
     left_points,right_points = trajectory_rails(image, closest_line_left,closest_line_right,steps)
 
-    bottom_point_left = all_left_points[0]
-    bottom_point_right = all_right_points[0]
+    bottom_point_left = left_points[0]
+    bottom_point_right = right_points[0]
 
     bottom_point = [(bottom_point_left[0]+bottom_point_right[0])*.5, (bottom_point_left[1]+bottom_point_right[1])*.5]
     all_left_points.extend(left_points)
@@ -286,15 +286,18 @@ def get_trajectory(image):
     #     all_right_points.extend(right_points)
 
     # ------------------- INTERSECTION -------------------
-    closest_line_left, closest_line_right = hough_section(canny_edge_image,0.6,0.8, 0.7, 150, image.shape[1] / 2.0, image.copy())   
+    closest_line_left, closest_line_right = hough_section(canny_edge_image,0.4,0.7, 0.7, 150, image.shape[1] / 2.0, image.copy())   
     if closest_line_left is None or closest_line_right is None: 
         return [all_left_points, all_right_points] #np.array([0, 0])
 
     point = intersection_generalized(closest_line_left, closest_line_right)
 
-    bottom_weight = 0.5
-    intersection_weight = 0.5
-    traj_point = [(bottom_point[0]*bottom_weight+point[0]*intersection_weight), (bottom_point[1]*bottom_weight+point[1]*intersection_weight)]
+    all_left_points.append(point)
+    all_right_points.append(point)
+
+    bottom_weight = 0.6
+    intersection_weight = 0.4
+    traj_point = [int(bottom_point[0]*bottom_weight+point[0]*intersection_weight), int(bottom_point[1]*bottom_weight+point[1]*intersection_weight)]
 
     all_left_points.append(traj_point)
     all_right_points.append(traj_point)
@@ -311,6 +314,7 @@ def get_trajectory(image):
 
     trajectory_points = [all_left_points, all_right_points]
 
+    print(trajectory_points)
     return trajectory_points
     # example:
     # [[[-99, 338], [-27, 300], [42, 263], [114, 225], [183, 188]], [[756, 338], [662, 300], [571, 263], [477, 225], [385, 188]]]
@@ -398,7 +402,7 @@ def show_image(image):
     cv2.destroyAllWindows()
 
 def main():
-    for i in ['_test']:
+    for i in range(1,18):
 
         image_path = r'C:\Users\shrey\OneDrive\Desktop\track'+str(i)+'.png'
         image = cv2.imread(image_path)
@@ -415,7 +419,7 @@ def main():
 
         image_path = r'C:\Users\shrey\OneDrive\Desktop\aaa'+str(i)+'.png'
 
-        # cv2.imwrite(image_path,trajectory_image)
+        cv2.imwrite(image_path,trajectory_image)
 
 
         # cv2.imwrite('blur.png',blur)
@@ -423,12 +427,4 @@ def main():
         #cv2.imwrite('hough_lines_' + str(i) + '.png',disp_image)
 
 if __name__ == "__main__":
-    img0 = cv2.imread('aaa.png')
-    # img = gaussian_blur(img0)
-    # show_image(img)
-    # img = canny_edges(img)
-    # show_image(img)
-    trajectory_image = img0.copy()
-    get_trajectory2(img0)
-    #main()
-    pass
+    main()
