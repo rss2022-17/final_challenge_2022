@@ -76,7 +76,7 @@ class OrangeLineDetector():
         upper_bound = (40, 255, 255)
         template = [lower_bound, upper_bound]
 
-        trajectory_pixels = lf_color_segmentation(image, template, pct=0.5, visualize=False)
+        trajectory_pixels = lf_color_segmentation(image, template, pct=0.5, visualize=False, similarity_margin=0.2)
 
         debug_img = image.copy()
 

@@ -380,7 +380,7 @@ def lf_color_segmentation(img, template=None, pct=0.6, similarity_margin=0.20, h
 			points_in_avg_intersect = [tuple(average_point[0].tolist())]
 			points_in_second_traj = list()
 
-			second_class_is_below = False
+			num_second_class_is_below = 0
 
 			for intercept in range(0, int(img_shape[0]*pixel_cutoff), horizontal_line_step):
 				# y = 0 is at the top
@@ -410,7 +410,7 @@ def lf_color_segmentation(img, template=None, pct=0.6, similarity_margin=0.20, h
 					if (mask[new_point_upper[1]-1, new_point_upper[0]-1] > 200): 
 						# yes, add it to trajectory
 						if yval > yboundary: # is the less steep class below the average intersection?
-							second_class_is_below = True 
+							num_second_class_is_below += 1 
 						points_in_second_traj.append(tuple(new_point_upper.tolist()))
 				
 			if detected_single_lane:
@@ -418,6 +418,7 @@ def lf_color_segmentation(img, template=None, pct=0.6, similarity_margin=0.20, h
 				points_in_trajectory = sorted(points_in_trajectory, key=lambda p: p[1], reverse=True) 	
 
 			else:
+                                second_class_is_below = num_second_class_is_below > len(points_in_second_traj)/2
 				# sort from nearest to bottom if the second class is not below. Otherwise sort top to bottom
 				points_in_second_traj = sorted(points_in_second_traj, key=lambda p: p[1], reverse=(not second_class_is_below))
 				points_in_trajectory = points_in_first_traj + points_in_avg_intersect + points_in_second_traj
