@@ -292,7 +292,9 @@ def get_trajectory(image):
 
     point = intersection_generalized(closest_line_left, closest_line_right)
 
-    traj_point = [(bottom_point[0]+point[0])*.5, (bottom_point[1]+point[1])*.5]
+    bottom_weight = 0.5
+    intersection_weight = 0.5
+    traj_point = [(bottom_point[0]*bottom_weight+point[0]*intersection_weight), (bottom_point[1]*bottom_weight+point[1]*intersection_weight)]
 
     all_left_points.append(traj_point)
     all_right_points.append(traj_point)
