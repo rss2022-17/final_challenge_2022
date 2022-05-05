@@ -3,7 +3,8 @@
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
-
+import rospy
+from sensor_msgs.msg import Image
 HORIZON = 0.4
 
 def color2grayscale(image):
