@@ -16,7 +16,7 @@ from visual_servoing.msg import ConeLocationPixel # custom message
 from homography_transformer import HomographyTransformer
 
 # import your color segmentation algorithm; call this function in ros_image_callback!
-from lane_detection import get_trajectory
+from lane_detection import get_trajectory2
 
 class LaneTrajectory():
     """
@@ -60,7 +60,7 @@ class LaneTrajectory():
 
         trajectory_sides = get_trajectory2(image)
 
-        #debug_img = image.copy()
+        debug_img = image.copy()
         
         # If we get a trajectory, then use it for point logic, otherwise publish a point that is directly infront of (or on)
         # the robot
@@ -87,8 +87,11 @@ class LaneTrajectory():
         #         self.trajectory.addPoint(new_point)
         if trajectory_sides is not None:
             x, y = self.homography.transformUvToXy(trajectory_sides[0], trajectory_sides[1])
+            x_img = np.rint((trajectory_sides[0])).astype(np.uint16)
+            y_img = np.rint((trajectory_sides[1])).astype(np.uint16)
             point = Point32(x, y, 0)
             self.trajectory.addPoint(point)
+            debug_img = cv2.circle(debug_img, (x_img, y_img), 5, (255, 255, 0), 1)
         else:
             self.trajectory.addPoint(Point32(0,0,0))
 
@@ -97,7 +100,7 @@ class LaneTrajectory():
         #print("in image callback2!")
 
         # cv2.imwrite("debug.png", debug_img)
-        # if (self.debug_pub.get_num_connections() > 0): self.debug_pub.publish(self.bridge.cv2_to_imgmsg(debug_img, "bgr8"))
+        if (self.debug_pub.get_num_connections() > 0): self.debug_pub.publish(self.bridge.cv2_to_imgmsg(debug_img, "bgr8"))
 
 
 
