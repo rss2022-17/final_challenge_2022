@@ -69,6 +69,14 @@ class OrangeLineDetector():
         # If the state machine hasn't activated, skip over the callback
         if not self.active_state: return
 
+        if time_to_wake is not None:
+
+            if rospy.get_time() < time_to_wake:
+                rospy.loginfo(".... shh. still sleeping")
+                return
+            else:
+                time_to_wake = None 
+
         #self.trajectory.clear()
         image = self.bridge.imgmsg_to_cv2(image_msg, "bgr8")
 
@@ -79,7 +87,6 @@ class OrangeLineDetector():
         trajectory_pixels = lf_color_segmentation(image, template, pct=0.5, visualize=False, similarity_margin=0.4)
 
         debug_img = image.copy()
-
 
         if type(trajectory_pixels) is bool: 
             # we should do a hard tune
@@ -92,12 +99,13 @@ class OrangeLineDetector():
             rospy.loginfo("Hard turn left: "+str(trajectory_pixels))
 
             self.turn_left_pub.publish(Bool(trajectory_pixels))
-            rospy.sleep(0.05)
+            rospy.sleep(0.01)
             self.turn_state_pub.publish(Bool(True))
 
             self.last_turn_left = trajectory_pixels
-            rospy.loginfo("Orange line detector will sleep for ten seconds")
-            rospy.sleep(10)
+            rospy.loginfo("Orange line detector will sleep for 5 seconds")
+            
+            time_to_wake = rospy.get_time() + 5
 
             trajectory_pixels = None
             image = None
