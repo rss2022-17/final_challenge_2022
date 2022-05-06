@@ -45,6 +45,8 @@ class OrangeLineDetector():
 
         self.homography = HomographyTransformer()
 
+        self.time_to_wake = None
+
         self.state_sub = rospy.Subscriber(self.line_follower_state_topic, Bool, self.state_callback)
         self.debug_pub = rospy.Publisher("/traj_debug_img", Image, queue_size=10)
         self.image_sub = rospy.Subscriber(self.image_topic, Image, self.image_callback)
@@ -69,13 +71,13 @@ class OrangeLineDetector():
         # If the state machine hasn't activated, skip over the callback
         if not self.active_state: return
 
-        if time_to_wake is not None:
+        if self.time_to_wake is not None:
 
-            if rospy.get_time() < time_to_wake:
+            if rospy.get_time() < self.time_to_wake:
                 rospy.loginfo(".... shh. still sleeping")
                 return
             else:
-                time_to_wake = None 
+                self.time_to_wake = None 
 
         #self.trajectory.clear()
         image = self.bridge.imgmsg_to_cv2(image_msg, "bgr8")
@@ -105,7 +107,7 @@ class OrangeLineDetector():
             self.last_turn_left = trajectory_pixels
             rospy.loginfo("Orange line detector will sleep for 5 seconds")
             
-            time_to_wake = rospy.get_time() + 5
+            self.time_to_wake = rospy.get_time() + 5
 
             trajectory_pixels = None
             image = None
