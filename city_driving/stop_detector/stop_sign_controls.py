@@ -57,7 +57,7 @@ class StopSignControl():
                 drive_cmd.drive.speed = 0
                 self.drive_pub.publish(drive_cmd)
 
-                rospy.sleep(0.5)
+                rospy.sleep(1)
 
                 self.sign_in_range.publish(False)
                 #Sleeps for 5 seconds which should be enough time for the car to have driven
