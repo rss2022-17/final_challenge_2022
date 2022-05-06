@@ -16,7 +16,7 @@ from visual_servoing.msg import ConeLocationPixel # custom message
 from homography_transformer import HomographyTransformer
 
 # import your color segmentation algorithm; call this function in ros_image_callback!
-from lane_detection import get_trajectory2
+from lane_detection import get_trajectory
 
 class LaneTrajectory():
     """
@@ -38,6 +38,7 @@ class LaneTrajectory():
         self.debug_pub = rospy.Publisher("/traj_debug_img", Image, queue_size=10)
         self.image_sub = rospy.Subscriber(self.image_topic, Image, self.image_callback)
         self.bridge = CvBridge() # Converts between ROS images and OpenCV Images
+        self.prev_traj = Point32(0,0,0)
 
     def image_callback(self, image_msg):
         # Apply your imported color segmentation function (cd_color_segmentation) to the image msg here
@@ -58,7 +59,7 @@ class LaneTrajectory():
         #print(image.shape[:2])
         image_y, image_x = image.shape[:2]
 
-        trajectory_sides = get_trajectory2(image)
+        trajectory_sides = get_trajectory(image)
 
         debug_img = image.copy()
         
@@ -90,10 +91,11 @@ class LaneTrajectory():
             x_img = np.rint((trajectory_sides[0])).astype(np.uint16)
             y_img = np.rint((trajectory_sides[1])).astype(np.uint16)
             point = Point32(x, y, 0)
+            self.prev_traj = point
             self.trajectory.addPoint(point)
             debug_img = trajectory_sides[2]
         else:
-            self.trajectory.addPoint(Point32(0,0,0))
+            self.trajectory.addPoint(self.prev_traj)
 
         self.traj_pub.publish(self.trajectory.toPoseArray())
         self.trajectory.publish_viz()
