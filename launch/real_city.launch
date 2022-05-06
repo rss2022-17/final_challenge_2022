@@ -23,11 +23,6 @@
 		<param name="car_wash_state" value="/car_wash_state"/>
 	</node>
 
-	<node pkg="final_challenge" type="stop_detector.py" name="stop_detector" output="screen">
-		<param name="stop_detected" value="/stop_detected"/>
-	</node>
-
-
 	<node pkg="final_challenge" type="orange_line_detector.py" name="Trajectory_planner" output="screen">
 		<param name="image_topic" value="/zed/zed_node/rgb/image_rect_color"/>
 		<param name="active_state" value="/line_follower"/>
@@ -38,4 +33,7 @@
 
 	<node pkg="wall_follower" type="safety_controller.py" name="safety_controller">
 	</node>
+	<!-- <node pkg="final_challenge" type="stop_detector.py" name="stop_detector" output="screen"> -->
+	<!--	<param name="stop_detected" value="/stop_detected"/> -->
+	<!--</node>-->
 </launch>
