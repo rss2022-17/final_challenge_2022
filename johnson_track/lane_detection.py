@@ -24,7 +24,10 @@ def color2grayscale(image):
     # cv2.imwrite(image_path,np.uint8(white_im))
 
     return np.uint8(white_im)
-
+def dilate(image):
+    kernel=np.ones((5,5), np.uint8)
+    image_dilated=cv2.dilate(image,kernel,iterations=1)
+    return image_dilated
 def gaussian_blur(image):
     x_kernel = 23
     y_kernel = 23
@@ -222,8 +225,9 @@ def hough_section(image, top_bound, bottom_bound, pinch, base_threshold, midline
 def get_trajectory(image):
 
     #Blur image to reduce noise
-    blur = gaussian_blur(color2grayscale(image))
-
+    #dilation = dilate(color2grayscale(image))
+    blur = gaussian_blur(image)
+    #blur = dilation
     #Gets edges from image 
     canny_edge_image = canny_edges(blur)
 
