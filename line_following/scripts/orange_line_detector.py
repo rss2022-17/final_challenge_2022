@@ -83,14 +83,18 @@ class OrangeLineDetector():
 
         if type(trajectory_pixels) is bool: 
             # we should do a hard tune
+            self.trajectory.clear()
+            self.traj_pub.publish(self.trajectory.toPoseArray())
 
             # publish true to /turn_state
             # publish to /turn_left
             self.turn_state_pub.publish(Bool(True))
+            rospy.sleep(0.01)
             self.turn_left_pub.publish(Bool(trajectory_pixels))
 
             self.last_turn_left = trajectory_pixels
-            #rospy.sleep(0.25)
+            rospy.loginfo("Orange line detector will sleep for ten seconds")
+            rospy.sleep(10)
 
         
         elif trajectory_pixels is not None and len(trajectory_pixels) > 2:
