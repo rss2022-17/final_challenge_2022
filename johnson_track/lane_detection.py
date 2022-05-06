@@ -36,7 +36,9 @@ def dilate(image):
     return image_dilated
 
 def filter_contours(image):
-    contours, hierarchy = cv2.findContours(image,cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    contours= cv2.findContours(image,cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    print("length" + str(len(contours)))
+    print(contours)
     blank_img = np.zeros(image.shape, dtype=np.uint8)
 
     for i in range(len(contours)):
