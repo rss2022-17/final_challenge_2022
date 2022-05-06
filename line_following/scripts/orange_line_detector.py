@@ -107,7 +107,7 @@ class OrangeLineDetector():
             self.last_turn_left = trajectory_pixels
             rospy.loginfo("Orange line detector will sleep for 5 seconds")
             
-            self.time_to_wake = rospy.get_time() + 5
+            self.time_to_wake = rospy.get_time() + 3.2
 
             trajectory_pixels = None
             image = None

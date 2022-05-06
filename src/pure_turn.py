@@ -34,12 +34,12 @@ class PureTurn(object):
             drive_cmd = AckermannDriveStamped()
             drive_cmd.header.stamp = rospy.Time.now()
             drive_cmd.header.frame_id = "/base_link"
-            drive_cmd.drive.steering_angle = self.angle
+            drive_cmd.drive.steering_angle = 0 
             drive_cmd.drive.speed = - self.speed / 2
             self.drive_pub.publish(drive_cmd)
 
             rospy.loginfo("Back up for 1 second at speed "+str(-self.speed/2))
-            rospy.sleep(1)
+            rospy.sleep(0.5)
 
             drive_cmd.header.stamp = rospy.Time.now()
             drive_cmd.drive.steering_angle = self.angle
@@ -48,7 +48,7 @@ class PureTurn(object):
             self.drive_pub.publish(drive_cmd)
 
             rospy.loginfo("Hard turn for 1 seconds")
-            rospy.sleep(2.5)
+            rospy.sleep(2)
 
             rospy.loginfo("Command it to stop")
             drive_cmd.header.stamp = rospy.Time.now()
