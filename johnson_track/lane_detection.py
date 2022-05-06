@@ -278,11 +278,11 @@ def get_trajectory(image):
     all_left_points.extend(left_points)
     all_right_points.extend(right_points)
 
-    image_viz = line_visualizer(canny_edge_image, np.array([closest_line_left]), (200,200,200))
-    image_viz = line_visualizer(image_viz, np.array([closest_line_right]), (200,200,200))
+    # image_viz = line_visualizer(canny_edge_image, np.array([closest_line_left]), (200,200,200))
+    # image_viz = line_visualizer(image_viz, np.array([closest_line_right]), (200,200,200))
 
-    image_path = r'C:\Users\shrey\OneDrive\Desktop\aaablur.png'
-    cv2.imwrite(image_path,canny_edge_image)
+    # image_path = r'C:\Users\shrey\OneDrive\Desktop\aaablur.png'
+    # cv2.imwrite(image_path,canny_edge_image)
 
     #new_midline = (all_left_points[-1][0] + all_right_points[-1][0])/2.0
 
