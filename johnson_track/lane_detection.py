@@ -226,7 +226,7 @@ def get_trajectory(image):
 
     #Blur image to reduce noise
     #dilation = dilate(color2grayscale(image))
-    blur = gaussian_blur(image)
+    blur = gaussian_blur(color2grayscale(image))
     #blur = dilation
     #Gets edges from image 
     canny_edge_image = canny_edges(blur)
