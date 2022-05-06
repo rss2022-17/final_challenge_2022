@@ -4,8 +4,8 @@ import rospy
 
 import numpy as np
 from sensor_msgs.msg import Image
-from detector import StopSignDetector
-from std_msgs.msg import Bool
+#from detector import StopSignDetector
+from std_msgs.msg import Bool, Float32MultiArray
 from ackermann_msgs.msg import AckermannDriveStamped
 
 class StopSignControl():
