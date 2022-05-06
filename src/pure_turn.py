@@ -32,7 +32,26 @@ class PureTurn(object):
             drive_cmd.header.stamp = rospy.Time.now()
             drive_cmd.header.frame_id = "/base_link"
             drive_cmd.drive.steering_angle = self.angle
+            drive_cmd.drive.speed = - self.speed / 2
+            self.drive_pub.publish(drive_cmd)
+
+            print("Back up for half a second at speed "+str(-self.speed/2))
+            rospy.sleep(0.5)
+
+            drive_cmd.header.stamp = rospy.Time.now()
+            drive_cmd.drive.steering_angle = self.angle
             drive_cmd.drive.speed = self.speed
+
+            self.drive_pub.publish(drive_cmd)
+
+            print("Hard turn for 0.3 seconds")
+            rospy.sleep(0.3)
+
+            print("Command it to stop")
+            drive_cmd.header.stamp = rospy.Time.now()
+            drive_cmd.drive.steering_angle = 0
+            drive_cmd.drive.speed = 0
+
             self.drive_pub.publish(drive_cmd)
 
     def direction_callback(self, msg):
