@@ -31,9 +31,11 @@
 		<!-- <param name="start_active" value="False"/> --> 
 	</node>
 
+	<node pkg="final_challenge" type="stop_sign_controls.py" name="stop_detector_controller" output="screen">
+	</node>
+
+
 	<node pkg="wall_follower" type="safety_controller.py" name="safety_controller">
 	</node>
-	<!-- <node pkg="final_challenge" type="stop_detector.py" name="stop_detector" output="screen"> -->
-	<!--	<param name="stop_detected" value="/stop_detected"/> -->
-	<!--</node>-->
+
 </launch>
