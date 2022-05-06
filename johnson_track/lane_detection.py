@@ -263,18 +263,22 @@ def get_trajectory(image):
     #new_midline = (all_left_points[-1][0] + all_right_points[-1][0])/2.0
 
     # ------------------- TOP -------------------
-    closest_line_left, closest_line_right = hough_section(canny_edge_image,0.45,0.5, 0.48, 150, image.shape[1] / 2.0, image.copy())   
-    if closest_line_left is None or closest_line_right is None: 
+    closest_line_left_top, closest_line_right_top = hough_section(canny_edge_image,0.45,0.5, 0.48, 150, image.shape[1] / 2.0, image.copy())   
+    if closest_line_left_top is None or closest_line_right_top is None: 
         return [all_left_points, all_right_points] #np.array([0, 0])
 
 
     # steps = [.49,.48,.47,.46,.45]
     # steps = [.47,.45]
     steps = [.43]
-    left_points,right_points = trajectory_rails(image, closest_line_left,closest_line_right,steps)
+    left_points,right_points = trajectory_rails(image, closest_line_left_top,closest_line_right_top,steps)
     if (np.abs(all_left_points[-1][0] - left_points[0][0]) < 100) and (np.abs(all_right_points[-1][0] - right_points[0][0]) < 100):
         all_left_points.extend(left_points)
         all_right_points.extend(right_points)
+
+    damp = False
+    if closest_line_left[0][1] - closest_line_left_top[0][1] < 0.1 and closest_line_right[0][1] - closest_line_right_top[0][1] < 0.1:
+        damp = True
  
 
     # new_midline = (all_left_points[-1][0] + all_right_points[-1][0])/2.0
@@ -289,7 +293,7 @@ def get_trajectory(image):
 
     trajectory_points = [all_left_points, all_right_points]
 
-    return trajectory_points
+    return (trajectory_points,damp)
     # example:
     # [[[-99, 338], [-27, 300], [42, 263], [114, 225], [183, 188]], [[756, 338], [662, 300], [571, 263], [477, 225], [385, 188]]]
     # [left, right]

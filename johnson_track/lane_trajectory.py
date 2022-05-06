@@ -58,7 +58,7 @@ class LaneTrajectory():
         #print(image.shape[:2])
         image_y, image_x = image.shape[:2]
 
-        trajectory_sides = get_trajectory(image)
+        trajectory_sides, damp = get_trajectory(image)
 
         debug_img = image.copy()
         
@@ -83,7 +83,11 @@ class LaneTrajectory():
                 y_avg_img = np.rint((left_y+right_y)/2.0).astype(np.uint16)
                 debug_img = cv2.circle(debug_img, (x_avg_img, y_avg_img), 5, (255, 255, 0), 1)
 
-                new_point = Point32(x_avg, y_avg, 0)
+                if damp:
+                    damp_factor = 0.5
+                    new_point = Point32(damp_factor*x_avg, damp_factor*y_avg, 0)
+                else:
+                    new_point = Point32(x_avg, y_avg, 0)
                 self.trajectory.addPoint(new_point)
         # if trajectory_sides is not None:
         #     x, y = self.homography.transformUvToXy(trajectory_sides[0], trajectory_sides[1])
