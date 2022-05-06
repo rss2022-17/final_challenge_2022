@@ -24,9 +24,12 @@ class PureTurn(object):
         self.drive_pub = rospy.Publisher(self.drive_topic, AckermannDriveStamped, queue_size=1)
         self.angle = 0
 
+        rospy.loginfo("Pure Turn initialized!")
+
     def turn_callback(self, msg):
         ''' Clears the currently followed trajectory, and loads the new one from the message
         '''
+        rospy.loginfo("Turn callback!")
         if msg.data:
             drive_cmd = AckermannDriveStamped()
             drive_cmd.header.stamp = rospy.Time.now()
@@ -35,19 +38,19 @@ class PureTurn(object):
             drive_cmd.drive.speed = - self.speed / 2
             self.drive_pub.publish(drive_cmd)
 
-            print("Back up for half a second at speed "+str(-self.speed/2))
-            rospy.sleep(0.5)
+            rospy.loginfo("Back up for 1 second at speed "+str(-self.speed/2))
+            rospy.sleep(3)
 
             drive_cmd.header.stamp = rospy.Time.now()
             drive_cmd.drive.steering_angle = self.angle
-            drive_cmd.drive.speed = self.speed
+            drive_cmd.drive.speed = self.speed/2
 
             self.drive_pub.publish(drive_cmd)
 
-            print("Hard turn for 0.3 seconds")
-            rospy.sleep(0.3)
+            rospy.loginfo("Hard turn for 1 seconds")
+            rospy.sleep(3)
 
-            print("Command it to stop")
+            rospy.loginfo("Command it to stop")
             drive_cmd.header.stamp = rospy.Time.now()
             drive_cmd.drive.steering_angle = 0
             drive_cmd.drive.speed = 0
