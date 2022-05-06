@@ -277,7 +277,7 @@ def get_trajectory(image):
         all_right_points.extend(right_points)
 
     damp = False
-    if closest_line_left[0][1] - closest_line_left_top[0][1] < 0.1 and closest_line_right[0][1] - closest_line_right_top[0][1] < 0.1:
+    if np.abs(closest_line_left[0][1] - closest_line_left_top[0][1]) < 0.1 and np.abs(closest_line_right[0][1] - closest_line_right_top[0][1]) < 0.1:
         damp = True
  
 
