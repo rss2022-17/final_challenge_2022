@@ -11,7 +11,7 @@ class SignDetector:
     def __init__(self):
         self.detector = StopSignDetector()
         self.stop_detected_topic = rospy.get_param("~stop_detected", "/stop_detected")
-        self.publisher = rospy.Publisher(self.stop_detected_topic, Bool, queue_size = 10)
+        self.publisher = rospy.Publisher(self.stop_detected_topic, Bool, queue_size = 1)
         self.subscriber = rospy.Subscriber("/zed/zed_node/rgb/image_rect_color", Image, self.callback)
 
     def callback(self, img_msg):
