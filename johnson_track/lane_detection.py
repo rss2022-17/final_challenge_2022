@@ -251,7 +251,7 @@ def get_trajectory(image):
     # image_path = r'C:\Users\shrey\OneDrive\Desktop\aaa.png'
     # cv2.imwrite(image_path,trajectory_image)
 
-    if closest_line_left is None or closest_line_right is None: return None #np.array([0, 0])
+    if closest_line_left is None or closest_line_right is None: return (None,False) #np.array([0, 0])
 
     # steps = [.9,.8,.7, .65, .6, .55, .5]
     # steps = [.9,.8,.7,.6,.5]
@@ -265,7 +265,7 @@ def get_trajectory(image):
     # ------------------- TOP -------------------
     closest_line_left_top, closest_line_right_top = hough_section(canny_edge_image,0.45,0.5, 0.48, 150, image.shape[1] / 2.0, image.copy())   
     if closest_line_left_top is None or closest_line_right_top is None: 
-        return [all_left_points, all_right_points] #np.array([0, 0])
+        return ([all_left_points, all_right_points],False) #np.array([0, 0])
 
 
     # steps = [.49,.48,.47,.46,.45]
@@ -277,7 +277,7 @@ def get_trajectory(image):
         all_right_points.extend(right_points)
 
     damp = False
-    if closest_line_left[0][1] - closest_line_left_top[0][1] < 0.1 and closest_line_right[0][1] - closest_line_right_top[0][1] < 0.1:
+    if np.abs(closest_line_left[0][1] - closest_line_left_top[0][1]) < 0.1 and np.abs(closest_line_right[0][1] - closest_line_right_top[0][1]) < 0.1:
         damp = True
  
 

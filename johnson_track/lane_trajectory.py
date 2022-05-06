@@ -84,8 +84,8 @@ class LaneTrajectory():
                 debug_img = cv2.circle(debug_img, (x_avg_img, y_avg_img), 5, (255, 255, 0), 1)
 
                 if damp:
-                    damp_factor = 0.5
-                    new_point = Point32(x_avg, damp_factor*y_avg, 0)
+                    lookahead = 4
+                    new_point = Point32(lookahead, y_avg, 0)
                 else:
                     new_point = Point32(x_avg, y_avg, 0)
                 self.trajectory.addPoint(new_point)
