@@ -85,7 +85,7 @@ class LaneTrajectory():
 
                 if damp:
                     damp_factor = 0.5
-                    new_point = Point32(damp_factor*x_avg, damp_factor*y_avg, 0)
+                    new_point = Point32(x_avg, damp_factor*y_avg, 0)
                 else:
                     new_point = Point32(x_avg, y_avg, 0)
                 self.trajectory.addPoint(new_point)
