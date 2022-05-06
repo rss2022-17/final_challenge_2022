@@ -28,7 +28,7 @@
 		<param name="active_state" value="/line_follower"/>
 
 		<!-- DEFAULTS TO BOOLEAN FALSE IN SCRIPT, I JUST HAVE THIS HERE AS A REMINDER THAT IT EXISTS -->
-		<!-- <param name="start_active" value="False"/> --> 
+		<param name="start_active" value="True"/> 
 	</node>
 
 	<node pkg="final_challenge" type="stop_sign_controls.py" name="stop_detector_controller" output="screen">

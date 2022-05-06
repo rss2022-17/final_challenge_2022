@@ -40,11 +40,12 @@ class StopSignControl():
 
         bbox = data.data
         #If no bounding box was found a.k.a no stop sign detected
-        if bbox is None:
+        if len(bbox)==0:
             self.sign_in_range.publish(False)
         
         else:
-            dist_to_stop = self.get_distance(bbox)
+            #dist_to_stop = self.get_distance(bbox)
+            dist_to_stop=0
             #If between .75meters and 1 meter away, then send flag to stop
             if True or dist_to_stop > .75 and dist_to_stop < 1: #remove the OR TRUE statement once we worry about distace
                 self.sign_in_range.publish(True)
@@ -83,7 +84,7 @@ class StopSignControl():
 
     
     def state_callback(self, data):
-        self.state_active = data.msg
+        self.state_active = data.data
 
     
 
