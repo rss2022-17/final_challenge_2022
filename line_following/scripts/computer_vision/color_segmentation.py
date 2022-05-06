@@ -351,7 +351,7 @@ def lf_color_segmentation(img, template=None, pct=0.6, similarity_margin=0.2, ho
 
 
 			# is the point mass on the left?
-			if x_of_point_mass < img_shape[0] / 2:
+			if x_of_point_mass < img_shape[1] / 2:
 				# yes! publish that we should do a hard left
 				return True
 			else:

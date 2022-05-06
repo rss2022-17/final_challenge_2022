@@ -88,13 +88,21 @@ class OrangeLineDetector():
 
             # publish true to /turn_state
             # publish to /turn_left
-            self.turn_state_pub.publish(Bool(True))
-            rospy.sleep(0.01)
+
+            rospy.loginfo("Hard turn left: "+str(trajectory_pixels))
+
             self.turn_left_pub.publish(Bool(trajectory_pixels))
+            rospy.sleep(0.05)
+            self.turn_state_pub.publish(Bool(True))
 
             self.last_turn_left = trajectory_pixels
             rospy.loginfo("Orange line detector will sleep for ten seconds")
             rospy.sleep(10)
+
+            trajectory_pixels = None
+            image = None
+            
+            return
 
         
         elif trajectory_pixels is not None and len(trajectory_pixels) > 2:
