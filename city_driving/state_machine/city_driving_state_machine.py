@@ -46,7 +46,7 @@ class CityStateMachine:
         self.following_pub.publish(msg_t)
 
     def line_follower_handler(self, event):
-        print "line follower"
+        rospy.logwarn("line follower")
         msg_f = Bool()
         msg_f.data = False
         msg_t = Bool()
@@ -57,7 +57,7 @@ class CityStateMachine:
             self.following_pub.publish(msg_f)
             rospy.sleep(0.01) # to ensure order of messages
             self.stopped_pub.publish(msg_t)
-            rospy.loginfo("Turned off line following and turned on stop state")
+            rospy.logwarn("Turned off line following and turned on stop state")
             newState = 'stopdetector'
         elif event == 'wash_event':
             # car wash detected state
@@ -72,14 +72,14 @@ class CityStateMachine:
         return newState
 
     def stop_detection_handler(self, event):
-        # print "stop time"
+        rospy.logwarn("stop time")
         newState = 'stopdetector'
         if event == 'line_event':
             msg_t = Bool()
             msg_t.data = True
             self.following_pub.publish(msg_t)
             
-            rospy.loginfo("Turned on line following from stop detection handler")
+            rospy.logwarn("Turned on line following from stop detection handler")
             newState = 'linefollower'
         # else:
         #     print "stop still detected :O"
